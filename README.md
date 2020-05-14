@@ -1,5 +1,6 @@
 ## Official [image-charts](https://image-charts.com/) PHP library
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/876830a7691d4275b34ed27d2400842f)](https://app.codacy.com/gh/image-charts/php?utm_source=github.com&utm_medium=referral&utm_content=image-charts/php&utm_campaign=Badge_Grade_Dashboard)
 [![Packagist VERSION](http://img.shields.io/packagist/v/image-charts/php.svg?style=flat)](https://packagist.org/packages/image-charts/php)
 [![maintainability](https://api.codeclimate.com/v1/badges/8ae1208964cbea39150a/maintainability)](https://codeclimate.com/github/image-charts/php/maintainability)
 [![test coverage](https://api.codeclimate.com/v1/badges/8ae1208964cbea39150a/test_coverage)](https://codeclimate.com/github/image-charts/php/test_coverage)

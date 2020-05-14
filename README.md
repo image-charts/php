@@ -1,8 +1,11 @@
 ## Official [image-charts](https://image-charts.com/) PHP library
 
 [![Packagist VERSION](http://img.shields.io/packagist/v/image-charts/php.svg?style=flat)](https://packagist.org/packages/image-charts/php)
-[![maintainability](https://api.codeclimate.com/v1/badges/8ae1208964cbea39150a/maintainability)](https://codeclimate.com/github/image-charts/php/maintainability)
-[![test coverage](https://api.codeclimate.com/v1/badges/8ae1208964cbea39150a/test_coverage)](https://codeclimate.com/github/image-charts/php/test_coverage)
+
+<!--
+[![maintainability](https://api.codeclimate.com/v1/badges/bf229a1db892bab209d4/maintainability)](https://codeclimate.com/github/image-charts/php/maintainability)
+[![test coverage](https://api.codeclimate.com/v1/badges/bf229a1db892bab209d4/test_coverage)](https://codeclimate.com/github/image-charts/php/test_coverage)
+-->
 
 [![DEPENDENCY STATUS](http://img.shields.io/david/image-charts/php.svg?style=flat)](https://david-dm.org/image-charts/php)
 [![DEVDEPENDENCY STATUS](http://img.shields.io/david/dev/image-charts/php.svg?style=flat)](https://david-dm.org/image-charts/php#info=devDependencies)

@@ -1,19 +1,19 @@
 ## Official [image-charts](https://image-charts.com/) PHP library
 
-[![Packagist VERSION](http://img.shields.io/packagist/v/image-charts/php.svg?style=flat)](https://packagist.org/packages/image-charts/php)
+[![Packagist VERSION](http://img.shields.io/packagist/v/image-charts/image-charts.svg?style=flat)](https://packagist.org/packages/image-charts/image-charts)
 
 <!--
 [![maintainability](https://api.codeclimate.com/v1/badges/bf229a1db892bab209d4/maintainability)](https://codeclimate.com/github/image-charts/php/maintainability)
 [![test coverage](https://api.codeclimate.com/v1/badges/bf229a1db892bab209d4/test_coverage)](https://codeclimate.com/github/image-charts/php/test_coverage)
 -->
 
-[![DEPENDENCY STATUS](http://img.shields.io/david/image-charts/php.svg?style=flat)](https://david-dm.org/image-charts/php)
-[![DEVDEPENDENCY STATUS](http://img.shields.io/david/dev/image-charts/php.svg?style=flat)](https://david-dm.org/image-charts/php#info=devDependencies)
+[![DEPENDENCY STATUS](http://img.shields.io/david/image-charts/image-charts.svg?style=flat)](https://david-dm.org/image-charts/image-charts)
+[![DEVDEPENDENCY STATUS](http://img.shields.io/david/dev/image-charts/image-charts.svg?style=flat)](https://david-dm.org/image-charts/image-charts#info=devDependencies)
 
 <!--
-[![NPM MONTHLY](http://img.shields.io/packagist/dm/image-charts/php.svg?style=flat)](http://packagist-stat.com/charts.html?package=image-charts/php)
-![NPM YEARLY](https://img.shields.io/packagist/dy/image-charts/php.svg)
-![NPM TOTAL](https://img.shields.io/packagist/dt/image-charts/php.svg)
+[![NPM MONTHLY](http://img.shields.io/packagist/dm/image-charts/image-charts.svg?style=flat)](http://packagist-stat.com/charts.html?package=image-charts/image-charts)
+![NPM YEARLY](https://img.shields.io/packagist/dy/image-charts/image-charts.svg)
+![NPM TOTAL](https://img.shields.io/packagist/dt/image-charts/image-charts.svg)
 -->
 
 Official [Image Charts](https://image-charts.com/) API client.
@@ -88,7 +88,7 @@ $pie->toBinary(); // {image content}
 ### Install
 
 ```bash
-composer require image-charts/php
+composer require image-charts/image-charts
 ```
 
 ```php

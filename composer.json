@@ -1,5 +1,5 @@
 {
-  "name": "image-charts/php",
+  "name": "image-charts/image-charts",
   "description": "Official Image-Charts.com API client library",
   "keywords": [
   "front-end",
@@ -23,7 +23,7 @@
   "line",
   "polar"
 ],
-  "homepage": "https://github.com/image-charts/php",
+  "homepage": "https://github.com/",
   "license": "Image-Charts",
   "require-dev": {
     "phpunit/phpunit": "^7.0"

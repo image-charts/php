@@ -24,7 +24,7 @@
   "polar"
 ],
   "homepage": "https://github.com/",
-  "license": "Image-Charts",
+  "license": "MIT",
   "require-dev": {
     "phpunit/phpunit": "^7.0"
   },

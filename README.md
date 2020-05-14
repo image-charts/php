@@ -66,13 +66,13 @@ Embed them everywhere in emails, pdf reports, chat bots...!
 ### Usage
 
 ```php
-
+<?php
 $pie = (new ImageCharts())->cht('p')->chd('a:2.5,5,8.3')->chs('100x100');
 
 $pie->toURL(); // https://image-charts.com/chart?chd=a%3A2.5%2C5%2C8.3&chs=600x300&cht=p
 $pie->toDataURI(); // data:image/png;base64,iVBORw0KGgo...
 $pie->toBinary(); // {image content}
-                           ```
+```
 
 <p align="center">
     <a href="https://www.image-charts.com/">
@@ -89,6 +89,7 @@ composer require image-charts/php
 ```
 
 ```php
+<?php
 $chart = new ImageCharts();
 ```
 
@@ -100,6 +101,7 @@ $chart = new ImageCharts();
 > Create an instance, the argument within [ ] is optional. See [usage](#usage)
 
 ```php
+<?php
 new ImageCharts( [ Object $opt ] )
 ```
 
@@ -108,6 +110,7 @@ new ImageCharts( [ Object $opt ] )
 > Default options are listed below.
 
 ```php
+<?php
 $opt = array(
 /*
 * Request timeout (in millisecond) when calling toBinary() or toDataURI()
@@ -158,6 +161,7 @@ $opt = array(
 ##### Usage
 
 ```php
+<?php
 
 $chart_url = new \ImageCharts()
                 ->cht('bvg') // vertical bar chart
@@ -181,6 +185,7 @@ echo $chart_url; // https://image-charts.com/chart?cht=bvg&chs=300x300&chd=a%3A6
 ##### Usage
 
 ```php
+<?php
 $chart_url = (new ImageCharts())
                 ->cht('bvg') // vertical bar chart
                 ->chs('300x300') // 300px x 300px
@@ -203,6 +208,7 @@ echo $chart_url; // <Buffer 89 50 4e 47 0d 0a 1a 0a 00 00 00 ...
 ##### Usage
 
 ```php
+<?php
 $chart_url = (new ImageCharts())
             ->cht('bvg') // vertical bar chart
             ->chs('300x300') // 300px x 300px
@@ -231,6 +237,7 @@ These two parameters are mandatory to sign your request and remove the watermark
 Replace both values in the code example below:
 
 ```php
+<?php
 
 $chart_url = (new ImageCharts(array("secret" : "SECRET_KEY")))
                 ->icac('ACCOUNT_ID')
@@ -259,6 +266,7 @@ Image-Charts virtual appliance can be deployed anywhere inside a customer networ
 
 
 ```php
+<?php
 $chart_url = (new ImageCharts(array(
     'secret' => 'SECRET_KEY',
 

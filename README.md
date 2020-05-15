@@ -6,14 +6,10 @@
 [![maintainability](https://api.codeclimate.com/v1/badges/bf229a1db892bab209d4/maintainability)](https://codeclimate.com/github/image-charts/php/maintainability)
 [![test coverage](https://api.codeclimate.com/v1/badges/bf229a1db892bab209d4/test_coverage)](https://codeclimate.com/github/image-charts/php/test_coverage)
 -->
-
-[![DEPENDENCY STATUS](http://img.shields.io/david/image-charts/image-charts.svg?style=flat)](https://david-dm.org/image-charts/image-charts)
-[![DEVDEPENDENCY STATUS](http://img.shields.io/david/dev/image-charts/image-charts.svg?style=flat)](https://david-dm.org/image-charts/image-charts#info=devDependencies)
-
 <!--
-[![NPM MONTHLY](http://img.shields.io/packagist/dm/image-charts/image-charts.svg?style=flat)](http://packagist-stat.com/charts.html?package=image-charts/image-charts)
-![NPM YEARLY](https://img.shields.io/packagist/dy/image-charts/image-charts.svg)
-![NPM TOTAL](https://img.shields.io/packagist/dt/image-charts/image-charts.svg)
+[![Packagist MONTHLY](http://img.shields.io/packagist/dm/image-charts/image-charts.svg?style=flat)](http://packagist-stat.com/charts.html?package=image-charts/image-charts)
+![Packagist YEARLY](https://img.shields.io/packagist/dy/image-charts/image-charts.svg)
+![Packagist TOTAL](https://img.shields.io/packagist/dt/image-charts/image-charts.svg)
 -->
 
 Official [Image Charts](https://image-charts.com/) API client.

@@ -121,8 +121,8 @@ class ImageChartsTest extends TestCase
       (new ImageCharts())->cht("p")->chd("t:1,2,3")->toDataURI();
     }
 
-    public function test_works(){
-      $this->assertSame((new ImageCharts())->cht("p")->chd("t:1,2,3")->chs("2x2")->toDataURI(), "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACAQAAAABazTCJAAAADElEQVR42mM4wHAAAAMEAYEq5W5aAAAAAElFTkSuQmCC");
+    public function test_toDataURI_works(){
+      $this->assertSame(substr((new ImageCharts())->cht("p")->chd("t:1,2,3")->chs("2x2")->toDataURI(), 0, 30), "data:image/png;base64,iVBORw0K");
     }
 
     public function test_support_gif(){

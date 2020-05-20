@@ -124,6 +124,17 @@ class ImageChartsTest extends TestCase
     public function test_toDataURI_works(){
       $this->assertSame(substr((new ImageCharts())->cht("p")->chd("t:1,2,3")->chs("2x2")->toDataURI(), 0, 30), "data:image/png;base64,iVBORw0K");
     }
+//
+//    public function test_toFile_with_bad_path_throw(){
+//      $this->expectException(Exception::class);
+//      $this->expectExceptionMessageRegExp('No such file or directory');
+//      (new ImageCharts())->cht("p")->chd("t:1,2,3")->chs("2x2")->toFile('/tmp_bad_path_sdijsd/plop.png');
+//    }
+
+    public function test_toFile_works(){
+      (new ImageCharts())->cht("p")->chd("t:1,2,3")->chs("2x2")->toFile('/tmp/plop.png');
+      $this->assertFileExists('/tmp/plop.png');
+    }
 
     public function test_support_gif(){
       $this->assertSame(substr((new ImageCharts())

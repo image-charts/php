@@ -16,18 +16,16 @@ Official [Image Charts](https://image-charts.com/) API client.
 Generate URLs of static image charts.
 Embed them everywhere in emails, pdf reports, chat bots...!
 
-### Table of Contents
-
-- __[Usage](#usage)__
-- __[Install](#install)__
+- __[Getting started](#getting-started)__
 - __[Enterprise support](#enterprise-support)__
 - __[On-Premise support](#on-premise-support)__
 - __[Constructor](#constructor)__
-- __[Options](#options)__
+    - __[Options](#options)__
 - __[Methods](#methods)__
-- __[toURL()](#tourl)__
-- __[toBinary()](#tobinary)__
-- __[toDataURI()](#todatauri)__
+    - __[toURL()](#tourl)__
+    - __[toFile()](#tofile)__
+    - __[toBuffer()](#tobuffer)__
+    - __[toDataURI()](#todatauri)__
     - __[cht(value) - Chart type](#cht)__
     - __[chd(value) - chart data](#chd)__
     - __[chds(value) - data format with custom scaling](#chds)__
@@ -62,13 +60,30 @@ Embed them everywhere in emails, pdf reports, chat bots...!
 
 -----------------------------------------------------------------------
 
-### Usage
+### Getting started
+
+#### 1. Install Image-Charts package with [Composer](https://getcomposer.org/)
+
+```bash
+composer require image-charts/image-charts
+```
+
+#### 2. Call Image-Charts constructor
 
 ```php
 <?php
-$pie = (new ImageCharts())->cht('p')->chd('a:2.5,5,8.3')->chs('100x100');
+$chart = new \ImageCharts();
+```
+
+#### 3. Generate a chart image
+
+```php
+<?php
+
+$pie = $chart->cht('p')->chd('a:2.5,5,8.3')->chs('100x100');
 
 $pie->toURL(); // https://image-charts.com/chart?chd=a%3A2.5%2C5%2C8.3&chs=600x300&cht=p
+$pie->toFile('/path/to/chart.png'); //
 $pie->toDataURI(); // data:image/png;base64,iVBORw0KGgo...
 $pie->toBinary(); // {image content}
 ```
@@ -78,20 +93,6 @@ $pie->toBinary(); // {image content}
         <img src="https://image-charts.com/chart?cht=bvs&chd=s:theresadifferencebetweenknowingthepathandwalkingthepath&chs=700x200&chxt=y&chf=b0,lg,90,4CA4F5,0.1,C371D3,0.8,EA469E,1" />
     </a>
 </p>
-
------------------------------------------------------------------------
-
-### Install
-
-```bash
-composer require image-charts/image-charts
-```
-
-```php
-<?php
-$chart = new ImageCharts();
-```
-
 
 ----------------------------------------------------------------------------------------------
 
@@ -176,6 +177,30 @@ echo $chart_url; // https://image-charts.com/chart?cht=bvg&chs=300x300&chd=a%3A6
 
 ----------------------------------------------------------------------------------------------
 
+<a name="tofile"></a>
+#### `toFile(filePath)` : `String`
+
+> Creates a file containing generated chart image
+
+##### Usage
+
+```php
+<?php
+
+(new \ImageCharts())
+->cht('bvg') // vertical bar chart
+->chs('300x300') // 300px x 300px
+->chd('a:60,40') // 2 data points: 60 and 40
+->toFile('/tmp/gorgeous_chart.png'); // write the chart
+
+```
+
+- _[Back to usage](#usage)_
+- _[Back to ToC](#table-of-contents)_
+
+
+----------------------------------------------------------------------------------------------
+
 <a name="tobinary"></a>
 #### `toBinary()` : `String`
 
@@ -191,7 +216,8 @@ $chart_url = (new ImageCharts())
                 ->chd('a:60,40') // 2 data points: 60 and 40
                 ->toBinary(); // download chart image
 
-echo $chart_url; // <Buffer 89 50 4e 47 0d 0a 1a 0a 00 00 00 ...
+echo $chart_url; // Image content
+
 ```
 
 - _[Back to usage](#usage)_
@@ -215,6 +241,7 @@ $chart_url = (new ImageCharts())
             ->toDataURI(); // download chart image and generate a data URI string
 
 echo $chart_url; // "data:image/png;base64,iVBORw0KGgo...
+
 ```
 
 - _[Back to usage](#usage)_
@@ -250,6 +277,7 @@ $chart_url = (new ImageCharts(array("secret" : "SECRET_KEY")))
 
 echo $chart_url;
 // https://image-charts.com/chart?chd=t%3A60%2C40&chf=ps0-0%2Clg%2C45%2Cffeb3b%2C0.2%2Cf44336%2C1%7Cps0-1%2Clg%2C45%2C8bc34a%2C0.2%2C009688%2C1&chl=Hello%7CWorld&chs=700x190&cht=p3&icac=fgribreau&icretina=1&ichm=652f09953663bce161ac612af5f310f5abf7151b55337ef2a97e5e1cd559c8fb
+
 ```
 
 <p align="center"><img src="https://image-charts.com/chart?chd=t%3A60%2C40&chf=ps0-0%2Clg%2C45%2Cffeb3b%2C0.2%2Cf44336%2C1%7Cps0-1%2Clg%2C45%2C8bc34a%2C0.2%2C009688%2C1&chl=Hello%7CWorld&chs=700x190&cht=p3&icac=fgribreau&icretina=1&ichm=652f09953663bce161ac612af5f310f5abf7151b55337ef2a97e5e1cd559c8fb"/></p>

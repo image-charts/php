@@ -574,6 +574,15 @@ class ImageCharts {
     throw new ErrorException($validation_message[0]->message, 0);
   }
 
+  /**
+   * Creates a file containing generated chart image
+   * @param {String} filename full path and filename
+   * @example '/tmp/chart.png'
+   * @return {String} binary image represented as a string
+   */
+  public function toFile($filePath) {
+    file_put_contents($filePath, $this->toBinary());
+  }
 
   /**
    * Do a blocking request to Image-Charts API with current configuration and a base64 encoded data URI

@@ -1,4 +1,4 @@
-## Official [image-charts](https://image-charts.com/) PHP library
+[![official image charts PHP library logo](./logo.jpg)](#getting-started)
 
 [![Packagist VERSION](http://img.shields.io/packagist/v/image-charts/image-charts.svg?style=flat)](https://packagist.org/packages/image-charts/image-charts)
 
@@ -15,8 +15,6 @@
 Official [Image Charts](https://image-charts.com/) API client.
 Generate URLs of static image charts.
 Embed them everywhere in emails, pdf reports, chat bots...!
-
-[![image charts PHP library logo](./logo.jpg)](#getting-started)
 
 ### Getting started
 

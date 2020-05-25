@@ -492,6 +492,32 @@ class ImageCharts {
     return $this->clone('icretina', $value);
   }
 
+  /**
+   * Background color for QR Codes
+   * [Reference documentation]{@link https://documentation.image-charts.com/qr-codes/#background-color}
+   * * @example
+  * const chart = ImageCharts().icqrb("FFFFFF");
+   * @default "FFFFFF"
+   * @param {string} value - Background color for QR Codes
+   * @return {ImageCharts.constructor}
+   */
+  public function icqrb($value) {
+    return $this->clone('icqrb', $value);
+  }
+
+  /**
+   * Foreground color for QR Codes
+   * [Reference documentation]{@link https://documentation.image-charts.com/qr-codes/#foreground-color}
+   * * @example
+  * const chart = ImageCharts().icqrf("000000");
+   * @default "000000"
+   * @param {string} value - Foreground color for QR Codes
+   * @return {ImageCharts.constructor}
+   */
+  public function icqrf($value) {
+    return $this->clone('icqrf', $value);
+  }
+
 
   /**
    * Get the full Image-Charts API url (signed and encoded if necessary)

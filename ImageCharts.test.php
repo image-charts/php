@@ -40,11 +40,20 @@ class ImageChartsTest extends TestCase
         return call_user_func(array($chart, $method->name), "plop");
       }
 
+      function build_query($query, $method){
+        $query[] = $method->name . '=plop';
+        return $query;
+      }
+
       $class = new ReflectionClass('ImageCharts');
       $chart = new ImageCharts();
 
-      $this->assertSame(array_reduce(array_filter($class->getMethods(), "is_chart_param"), "call_method", $chart)->toURL(),
-        "https://image-charts.com:443/chart?cht=plop&chd=plop&chds=plop&choe=plop&chld=plop&chxr=plop&chof=plop&chs=plop&chdl=plop&chdls=plop&chg=plop&chco=plop&chtt=plop&chts=plop&chxt=plop&chxl=plop&chxs=plop&chm=plop&chls=plop&chl=plop&chma=plop&chdlp=plop&chf=plop&chan=plop&chli=plop&icac=plop&ichm=plop&icff=plop&icfs=plop&iclocale=plop&icretina=plop"
+      $methods = array_filter($class->getMethods(), "is_chart_param");
+
+
+
+      $this->assertSame(array_reduce($methods, "call_method", $chart)->toURL(),
+        "https://image-charts.com:443/chart?". implode('&', array_reduce($methods, "build_query", array()))
       );
     }
 

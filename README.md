@@ -2,15 +2,10 @@
 
 [![Packagist VERSION](http://img.shields.io/packagist/v/image-charts/image-charts.svg?style=flat)](https://packagist.org/packages/image-charts/image-charts)
 
-<!--
-[![maintainability](https://api.codeclimate.com/v1/badges/bf229a1db892bab209d4/maintainability)](https://codeclimate.com/github/image-charts/php/maintainability)
-[![test coverage](https://api.codeclimate.com/v1/badges/bf229a1db892bab209d4/test_coverage)](https://codeclimate.com/github/image-charts/php/test_coverage)
--->
-<!--
-[![Packagist MONTHLY](http://img.shields.io/packagist/dm/image-charts/image-charts.svg?style=flat)](http://packagist-stat.com/charts.html?package=image-charts/image-charts)
-![Packagist YEARLY](https://img.shields.io/packagist/dy/image-charts/image-charts.svg)
-![Packagist TOTAL](https://img.shields.io/packagist/dt/image-charts/image-charts.svg)
--->
+![Libraries.io dependency status for GitHub repo](https://img.shields.io/librariesio/github/image-charts/php)
+![Code Climate technical debt](https://img.shields.io/codeclimate/tech-debt/image-charts/php)
+![Code Climate issues](https://img.shields.io/codeclimate/issues/image-charts/php)
+
 
 Official [Image Charts](https://image-charts.com/) API client.
 Generate URLs of static image charts.

@@ -3,8 +3,8 @@
 [![Packagist VERSION](http://img.shields.io/packagist/v/image-charts/image-charts.svg?style=flat)](https://packagist.org/packages/image-charts/image-charts)
 
 ![Libraries.io dependency status for GitHub repo](https://img.shields.io/librariesio/github/image-charts/php)
-![Code Climate technical debt](https://img.shields.io/codeclimate/tech-debt/image-charts/php)
-![Code Climate issues](https://img.shields.io/codeclimate/issues/image-charts/php)
+![Code Climate maintainability](https://img.shields.io/codeclimate/maintainability/image-charts/php)
+
 
 
 Official [Image Charts](https://image-charts.com/) API client.

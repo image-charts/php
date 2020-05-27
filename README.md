@@ -3,8 +3,8 @@
 [![Packagist VERSION](http://img.shields.io/packagist/v/image-charts/image-charts.svg?style=flat)](https://packagist.org/packages/image-charts/image-charts)
 
 <!--
-[![maintainability](https://api.codeclimate.com/v1/badges/bf229a1db892bab209d4/maintainability)](https://codeclimate.com/github/image-charts/WILL BE SET LATER/maintainability)
-[![test coverage](https://api.codeclimate.com/v1/badges/bf229a1db892bab209d4/test_coverage)](https://codeclimate.com/github/image-charts/WILL BE SET LATER/test_coverage)
+[![maintainability](https://api.codeclimate.com/v1/badges/bf229a1db892bab209d4/maintainability)](https://codeclimate.com/github/image-charts/php/maintainability)
+[![test coverage](https://api.codeclimate.com/v1/badges/bf229a1db892bab209d4/test_coverage)](https://codeclimate.com/github/image-charts/php/test_coverage)
 -->
 <!--
 [![Packagist MONTHLY](http://img.shields.io/packagist/dm/image-charts/image-charts.svg?style=flat)](http://packagist-stat.com/charts.html?package=image-charts/image-charts)

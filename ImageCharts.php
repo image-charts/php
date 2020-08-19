@@ -347,7 +347,7 @@ class ImageCharts {
 
   /**
    * Position and style of labels on data
-   * [Reference documentation]{@link https://documentation.image-charts.com/reference/chart-label/}
+   * [Reference documentation]{@link https://documentation.image-charts.com/reference/chart-label/#positionning-and-formatting}
    * * @example
   * const chart = ImageCharts().chlps("align,top|offset,10|color,FF00FF");
   * const chart = ImageCharts().chlps("align,top|offset,10|color,FF00FF");

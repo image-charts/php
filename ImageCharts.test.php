@@ -77,7 +77,7 @@ class ImageChartsTest extends TestCase
 
     public function test_rejects_if_a_icac_is_defined_without_ichm(){
       $this->expectException(ErrorException::class);
-      $this->expectExceptionMessage("IC_MISSING_ENT_PARAMETER");
+      $this->expectExceptionMessage("The `icac` (ACCOUNT_ID) and `ichm` (HMAC-SHA256 request signature) query parameters must both be defined if specified. [Learn more](https://bit.ly/HMACENT)");
       (new ImageCharts())
           ->cht("p")
           ->chd("t:1,2,3")
@@ -120,7 +120,7 @@ class ImageChartsTest extends TestCase
     public function test_throw_error_if_account_not_found(){
       $this->expectException(ErrorException::class);
 
-      $this->expectExceptionMessage('IC_ACCOUNT_ID_NOT_FOUND');
+      $this->expectExceptionMessage('ACCOUND_ID not found, you must be an Image-Charts subscriber');
       (new ImageCharts(array("secret" => "plop")))->cht("p")->chd("t:1,2,3")->chs("10x10")->icac("MY_ACCOUNT_ID")->toBinary();
     }
 

@@ -119,8 +119,7 @@ class ImageChartsTest extends TestCase
     }
     public function test_throw_error_if_account_not_found(){
       $this->expectException(ErrorException::class);
-
-      $this->expectExceptionMessage('ACCOUND_ID not found, you must be an Image-Charts subscriber');
+      $this->expectExceptionMessage('you must be an Image-Charts subscriber');
       (new ImageCharts(array("secret" => "plop")))->cht("p")->chd("t:1,2,3")->chs("10x10")->icac("MY_ACCOUNT_ID")->toBinary();
     }
 

@@ -1,6 +1,6 @@
 <?php
 
-$chart_url = (new ImageCharts(array("secret" : "SECRET_KEY")))
+$chart_url = (new ImageCharts(array("secret" => "SECRET_KEY")))
                 ->icac('ACCOUNT_ID')
                 ->cht('p3') // pie chart
                 ->chs('700x190') // 700px x 190px

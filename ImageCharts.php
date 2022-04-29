@@ -562,7 +562,7 @@ class ImageCharts {
     $query_string = http_build_query($this->query);
     $url .= '?'. $query_string;
 
-    if(isset($this->query["icac"], $this->secret) && count($this->secret) > 0) {
+    if(isset($this->query["icac"], $this->secret) && strlen($this->secret) > 0) {
       $url .= '&ichm='. hash_hmac('sha256', $query_string, $this->secret);
     }
 

@@ -26,7 +26,7 @@
   "homepage": "https://github.com/",
   "license": "MIT",
   "require-dev": {
-    "phpunit/phpunit": "^7.0"
+    "phpunit/phpunit": "^9"
   },
   "authors": [{
     "name": "François-Guillaume Ribreau",

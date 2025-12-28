@@ -9,6 +9,7 @@ class ImageCharts {
   public $timeout;
   public $query;
   public $secret;
+  public $user_agent;
   public $response_headers;
 
   /**
@@ -29,6 +30,7 @@ class ImageCharts {
     $this->pathname = isset($options["pathname"]) ? $options["pathname"] : '/chart';
     $this->timeout = isset($options["timeout"]) ? $options["timeout"] : 5000;
     $this->secret = isset($options["secret"]) ? $options["secret"] : null;
+    $this->user_agent = isset($options["user_agent"]) ? $options["user_agent"] : null;
     $this->query = $previous;
   }
 
@@ -42,6 +44,7 @@ class ImageCharts {
       "pathname" => $this->pathname,
       "timeout" => $this->timeout,
       "secret" => $this->secret,
+      "user_agent" => $this->user_agent,
     ), array_merge($this->query, $add));
   }
 
@@ -593,7 +596,7 @@ class ImageCharts {
         CURLOPT_FOLLOWLOCATION => 1,
         CURLOPT_HEADERFUNCTION => array($this, 'read_response_headers'),
         CURLOPT_TIMEOUT_MS => $this->timeout,
-        CURLOPT_USERAGENT => "php-image-charts/latest" . (isset($this->query["icac"]) && strlen($this->query["icac"]) > 0 ? (" ({$this->query["icac"]})") : "")
+        CURLOPT_USERAGENT => $this->user_agent ? $this->user_agent : ("php-image-charts/latest" . (isset($this->query["icac"]) && strlen($this->query["icac"]) > 0 ? (" ({$this->query["icac"]})") : ""))
     );
 
     $ch = curl_init();
@@ -619,15 +622,19 @@ class ImageCharts {
     }
 
     // @codeCoverageIgnoreStart
+    $error_code = isset($this->response_headers['x-ic-error-code']) && count($this->response_headers['x-ic-error-code']) > 0
+        ? $this->response_headers['x-ic-error-code'][0]
+        : 'HTTP_' . $status_code;
+
     if(!isset($this->response_headers['x-ic-error-validation']) || count($this->response_headers['x-ic-error-validation']) == 0){
-        throw new ErrorException($this->response_headers['x-ic-error-code'][0], 0);
+        throw new ErrorException($error_code, 0);
     }
     // @codeCoverageIgnoreEnd
 
     $validation_message = json_decode($this->response_headers['x-ic-error-validation'][0]);
 
     if(!$validation_message){
-        throw new ErrorException($this->response_headers['x-ic-error-code'][0], 0);
+        throw new ErrorException($error_code, 0);
     }
 
     throw new ErrorException($validation_message[0]->message, 0);

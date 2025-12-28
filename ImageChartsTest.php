@@ -4,6 +4,16 @@
 
 use PHPUnit\Framework\TestCase;
 
+// CI user-agent to bypass rate limiting (set in CI environment)
+define('CI_USER_AGENT', getenv('IMAGE_CHARTS_USER_AGENT') ?: null);
+
+// Helper to create ImageCharts with CI user-agent if set
+function createImageCharts($opts = array()) {
+    if (CI_USER_AGENT) {
+        $opts['user_agent'] = CI_USER_AGENT;
+    }
+    return new ImageCharts($opts);
+}
 
 /**
  * @codeCoverageIgnore
@@ -77,13 +87,13 @@ class ImageChartsTest extends TestCase
     public function test_rejects_if_a_chs_is_not_defined(){
       $this->expectException(ErrorException::class);
       $this->expectExceptionMessage('"chs" is required');
-      (new ImageCharts())->cht("p")->chd("t:1,2,3")->toBinary();
+      createImageCharts()->cht("p")->chd("t:1,2,3")->toBinary();
     }
 
     public function test_rejects_if_a_icac_is_defined_without_ichm(){
       $this->expectException(ErrorException::class);
       $this->expectExceptionMessage("The `icac` (ACCOUNT_ID) and `ichm` (HMAC-SHA256 request signature) query parameters must both be defined if specified. [Learn more](https://bit.ly/HMACENT)");
-      (new ImageCharts())
+      createImageCharts()
           ->cht("p")
           ->chd("t:1,2,3")
           ->chs("100x100")
@@ -131,26 +141,26 @@ class ImageChartsTest extends TestCase
     public function test_rejects_if_there_was_an_error(){
       $this->expectException(ErrorException::class);
       $this->expectExceptionMessage('"chs" is required');
-      (new ImageCharts())->cht("p")->chd("t:1,2,3")->toDataURI();
+      createImageCharts()->cht("p")->chd("t:1,2,3")->toDataURI();
     }
 
     public function test_toDataURI_works(){
-      $this->assertSame(substr((new ImageCharts())->cht("p")->chd("t:1,2,3")->chs("2x2")->toDataURI(), 0, 30), "data:image/png;base64,iVBORw0K");
+      $this->assertSame(substr(createImageCharts()->cht("p")->chd("t:1,2,3")->chs("2x2")->toDataURI(), 0, 30), "data:image/png;base64,iVBORw0K");
     }
 //
 //    public function test_toFile_with_bad_path_throw(){
 //      $this->expectException(Exception::class);
 //      $this->expectExceptionMessageRegExp('No such file or directory');
-//      (new ImageCharts())->cht("p")->chd("t:1,2,3")->chs("2x2")->toFile('/tmp_bad_path_sdijsd/plop.png');
+//      createImageCharts()->cht("p")->chd("t:1,2,3")->chs("2x2")->toFile('/tmp_bad_path_sdijsd/plop.png');
 //    }
 
     public function test_toFile_works(){
-      (new ImageCharts())->cht("p")->chd("t:1,2,3")->chs("2x2")->toFile('/tmp/plop.png');
+      createImageCharts()->cht("p")->chd("t:1,2,3")->chs("2x2")->toFile('/tmp/plop.png');
       $this->assertFileExists('/tmp/plop.png');
     }
 
     public function test_support_gif(){
-      $this->assertSame(substr((new ImageCharts())
+      $this->assertSame(substr(createImageCharts()
         ->cht("p")
         ->chd("t:1,2,3")
         ->chan("100")

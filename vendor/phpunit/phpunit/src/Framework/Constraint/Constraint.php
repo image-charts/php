@@ -9,24 +9,20 @@
  */
 namespace PHPUnit\Framework\Constraint;
 
+use function gettype;
 use function sprintf;
+use function strtolower;
 use Countable;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\SelfDescribing;
+use PHPUnit\Util\Exporter;
 use SebastianBergmann\Comparator\ComparisonFailure;
-use SebastianBergmann\Exporter\Exporter;
-use SebastianBergmann\RecursionContext\InvalidArgumentException;
 
 /**
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  */
 abstract class Constraint implements Countable, SelfDescribing
 {
-    /**
-     * @var ?Exporter
-     */
-    private $exporter;
-
     /**
      * Evaluates the constraint for parameter $other.
      *
@@ -38,9 +34,8 @@ abstract class Constraint implements Countable, SelfDescribing
      * failure.
      *
      * @throws ExpectationFailedException
-     * @throws InvalidArgumentException
      */
-    public function evaluate($other, string $description = '', bool $returnResult = false): ?bool
+    public function evaluate(mixed $other, string $description = '', bool $returnResult = false): ?bool
     {
         $success = false;
 
@@ -67,13 +62,12 @@ abstract class Constraint implements Countable, SelfDescribing
         return 1;
     }
 
-    protected function exporter(): Exporter
+    /**
+     * @deprecated
+     */
+    protected function exporter(): \SebastianBergmann\Exporter\Exporter
     {
-        if ($this->exporter === null) {
-            $this->exporter = new Exporter;
-        }
-
-        return $this->exporter;
+        return new \SebastianBergmann\Exporter\Exporter;
     }
 
     /**
@@ -81,12 +75,8 @@ abstract class Constraint implements Countable, SelfDescribing
      * constraint is met, false otherwise.
      *
      * This method can be overridden to implement the evaluation algorithm.
-     *
-     * @param mixed $other value or object to evaluate
-     *
-     * @codeCoverageIgnore
      */
-    protected function matches($other): bool
+    protected function matches(mixed $other): bool
     {
         return false;
     }
@@ -94,15 +84,9 @@ abstract class Constraint implements Countable, SelfDescribing
     /**
      * Throws an exception for the given compared value and test description.
      *
-     * @param mixed  $other       evaluated value or object
-     * @param string $description Additional information about the test
-     *
      * @throws ExpectationFailedException
-     * @throws InvalidArgumentException
-     *
-     * @psalm-return never-return
      */
-    protected function fail($other, $description, ?ComparisonFailure $comparisonFailure = null): void
+    protected function fail(mixed $other, string $description, ?ComparisonFailure $comparisonFailure = null): never
     {
         $failureDescription = sprintf(
             'Failed asserting that %s.',
@@ -130,10 +114,8 @@ abstract class Constraint implements Countable, SelfDescribing
      *
      * The function can be overridden to provide additional failure
      * information like a diff
-     *
-     * @param mixed $other evaluated value or object
      */
-    protected function additionalFailureDescription($other): string
+    protected function additionalFailureDescription(mixed $other): string
     {
         return '';
     }
@@ -146,14 +128,10 @@ abstract class Constraint implements Countable, SelfDescribing
      *
      * To provide additional failure information additionalFailureDescription
      * can be used.
-     *
-     * @param mixed $other evaluated value or object
-     *
-     * @throws InvalidArgumentException
      */
-    protected function failureDescription($other): string
+    protected function failureDescription(mixed $other): string
     {
-        return $this->exporter()->export($other) . ' ' . $this->toString();
+        return Exporter::export($other, true) . ' ' . $this->toString(true);
     }
 
     /**
@@ -167,11 +145,8 @@ abstract class Constraint implements Countable, SelfDescribing
      *
      * The method shall return empty string, when it does not handle
      * customization by itself.
-     *
-     * @param Operator $operator the $operator of the expression
-     * @param mixed    $role     role of $this constraint in the $operator expression
      */
-    protected function toStringInContext(Operator $operator, $role): string
+    protected function toStringInContext(Operator $operator, mixed $role): string
     {
         return '';
     }
@@ -187,12 +162,8 @@ abstract class Constraint implements Countable, SelfDescribing
      *
      * The method shall return empty string, when it does not handle
      * customization by itself.
-     *
-     * @param Operator $operator the $operator of the expression
-     * @param mixed    $role     role of $this constraint in the $operator expression
-     * @param mixed    $other    evaluated value or object
      */
-    protected function failureDescriptionInContext(Operator $operator, $role, $other): string
+    protected function failureDescriptionInContext(Operator $operator, mixed $role, mixed $other): string
     {
         $string = $this->toStringInContext($operator, $role);
 
@@ -200,7 +171,7 @@ abstract class Constraint implements Countable, SelfDescribing
             return '';
         }
 
-        return $this->exporter()->export($other) . ' ' . $string;
+        return Exporter::export($other, true) . ' ' . $string;
     }
 
     /**
@@ -266,5 +237,28 @@ abstract class Constraint implements Countable, SelfDescribing
     protected function reduce(): self
     {
         return $this;
+    }
+
+    /**
+     * @psalm-return non-empty-string
+     */
+    protected function valueToTypeStringFragment(mixed $value): string
+    {
+        $type = strtolower(gettype($value));
+
+        if ($type === 'double') {
+            $type = 'float';
+        }
+
+        if ($type === 'resource (closed)') {
+            $type = 'closed resource';
+        }
+
+        return match ($type) {
+            'array', 'integer', 'object' => 'an ' . $type . ' ',
+            'boolean', 'closed resource', 'float', 'resource', 'string' => 'a ' . $type . ' ',
+            'null'  => 'null ',
+            default => 'a value of ' . $type . ' ',
+        };
     }
 }

@@ -813,6 +813,7 @@
                     "type": "github"
                 }
             ],
+            "abandoned": true,
             "install-path": "../sebastian/code-unit"
         },
         {
@@ -871,6 +872,7 @@
                     "type": "github"
                 }
             ],
+            "abandoned": true,
             "install-path": "../sebastian/code-unit-reverse-lookup"
         },
         {

@@ -1,6 +1,5 @@
 junit.xml
 coverage/
-node_modules/
-out/
-solution-src/
-*.tsbuildinfo
+vendor/
+.DS_Store
+*.log

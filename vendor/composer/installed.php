@@ -3,7 +3,7 @@
         'name' => 'image-charts/image-charts',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => '7eab2680a751dbfa642747ee1649343d771f4fd5',
+        'reference' => 'e26a6b8cfd2bab00eeb17030380734a4482b91e1',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'image-charts/image-charts' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => '7eab2680a751dbfa642747ee1649343d771f4fd5',
+            'reference' => 'e26a6b8cfd2bab00eeb17030380734a4482b91e1',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

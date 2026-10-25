@@ -12,34 +12,57 @@ namespace PHPUnit\TextUI\Configuration;
 /**
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  *
- * @psalm-immutable
+ * @immutable
+ *
+ * @phpstan-type DeprecationTriggers array{functions: list<non-empty-string>, methods: list<non-empty-string>, ignoreUndefinedTriggers: bool}
  */
-final class Source
+final readonly class Source
 {
     /**
-     * @psalm-var non-empty-string
+     * @var non-empty-string
      */
-    private readonly ?string $baseline;
-    private readonly bool $ignoreBaseline;
-    private readonly FilterDirectoryCollection $includeDirectories;
-    private readonly FileCollection $includeFiles;
-    private readonly FilterDirectoryCollection $excludeDirectories;
-    private readonly FileCollection $excludeFiles;
-    private readonly bool $restrictDeprecations;
-    private readonly bool $restrictNotices;
-    private readonly bool $restrictWarnings;
-    private readonly bool $ignoreSuppressionOfDeprecations;
-    private readonly bool $ignoreSuppressionOfPhpDeprecations;
-    private readonly bool $ignoreSuppressionOfErrors;
-    private readonly bool $ignoreSuppressionOfNotices;
-    private readonly bool $ignoreSuppressionOfPhpNotices;
-    private readonly bool $ignoreSuppressionOfWarnings;
-    private readonly bool $ignoreSuppressionOfPhpWarnings;
+    private ?string $baseline;
+    private bool $ignoreBaseline;
+    private FilterDirectoryCollection $includeDirectories;
+    private FilterFileCollection $includeFiles;
+    private FilterDirectoryCollection $excludeDirectories;
+    private FilterFileCollection $excludeFiles;
+    private bool $restrictNotices;
+    private bool $restrictWarnings;
+    private bool $ignoreSuppressionOfDeprecations;
+    private bool $ignoreSuppressionOfPhpDeprecations;
+    private bool $ignoreSuppressionOfErrors;
+    private bool $ignoreSuppressionOfNotices;
+    private bool $ignoreSuppressionOfPhpNotices;
+    private bool $ignoreSuppressionOfWarnings;
+    private bool $ignoreSuppressionOfPhpWarnings;
+    private bool $ignoreSelfDeprecations;
+    private bool $ignoreDirectDeprecations;
+    private bool $ignoreIndirectDeprecations;
+    private bool $identifyIssueTrigger;
 
     /**
-     * @psalm-param non-empty-string $baseline
+     * @var DeprecationTriggers
      */
-    public function __construct(?string $baseline, bool $ignoreBaseline, FilterDirectoryCollection $includeDirectories, FileCollection $includeFiles, FilterDirectoryCollection $excludeDirectories, FileCollection $excludeFiles, bool $restrictDeprecations, bool $restrictNotices, bool $restrictWarnings, bool $ignoreSuppressionOfDeprecations, bool $ignoreSuppressionOfPhpDeprecations, bool $ignoreSuppressionOfErrors, bool $ignoreSuppressionOfNotices, bool $ignoreSuppressionOfPhpNotices, bool $ignoreSuppressionOfWarnings, bool $ignoreSuppressionOfPhpWarnings)
+    private array $deprecationTriggers;
+
+    /**
+     * @var list<non-empty-string>
+     */
+    private array $issueTriggerResolvers;
+
+    /**
+     * @var list<non-empty-string>
+     */
+    private array $deprecationFilters;
+
+    /**
+     * @param ?non-empty-string      $baseline
+     * @param DeprecationTriggers    $deprecationTriggers
+     * @param list<non-empty-string> $issueTriggerResolvers
+     * @param list<non-empty-string> $deprecationFilters
+     */
+    public function __construct(?string $baseline, bool $ignoreBaseline, FilterDirectoryCollection $includeDirectories, FilterFileCollection $includeFiles, FilterDirectoryCollection $excludeDirectories, FilterFileCollection $excludeFiles, bool $restrictNotices, bool $restrictWarnings, bool $ignoreSuppressionOfDeprecations, bool $ignoreSuppressionOfPhpDeprecations, bool $ignoreSuppressionOfErrors, bool $ignoreSuppressionOfNotices, bool $ignoreSuppressionOfPhpNotices, bool $ignoreSuppressionOfWarnings, bool $ignoreSuppressionOfPhpWarnings, array $deprecationTriggers, bool $ignoreSelfDeprecations, bool $ignoreDirectDeprecations, bool $ignoreIndirectDeprecations, bool $identifyIssueTrigger, array $issueTriggerResolvers = [], array $deprecationFilters = [])
     {
         $this->baseline                           = $baseline;
         $this->ignoreBaseline                     = $ignoreBaseline;
@@ -47,7 +70,6 @@ final class Source
         $this->includeFiles                       = $includeFiles;
         $this->excludeDirectories                 = $excludeDirectories;
         $this->excludeFiles                       = $excludeFiles;
-        $this->restrictDeprecations               = $restrictDeprecations;
         $this->restrictNotices                    = $restrictNotices;
         $this->restrictWarnings                   = $restrictWarnings;
         $this->ignoreSuppressionOfDeprecations    = $ignoreSuppressionOfDeprecations;
@@ -57,10 +79,17 @@ final class Source
         $this->ignoreSuppressionOfPhpNotices      = $ignoreSuppressionOfPhpNotices;
         $this->ignoreSuppressionOfWarnings        = $ignoreSuppressionOfWarnings;
         $this->ignoreSuppressionOfPhpWarnings     = $ignoreSuppressionOfPhpWarnings;
+        $this->deprecationTriggers                = $deprecationTriggers;
+        $this->ignoreSelfDeprecations             = $ignoreSelfDeprecations;
+        $this->ignoreDirectDeprecations           = $ignoreDirectDeprecations;
+        $this->ignoreIndirectDeprecations         = $ignoreIndirectDeprecations;
+        $this->identifyIssueTrigger               = $identifyIssueTrigger;
+        $this->issueTriggerResolvers              = $issueTriggerResolvers;
+        $this->deprecationFilters                 = $deprecationFilters;
     }
 
     /**
-     * @psalm-assert-if-true !null $this->baseline
+     * @phpstan-assert-if-true !null $this->baseline
      */
     public function useBaseline(): bool
     {
@@ -68,7 +97,7 @@ final class Source
     }
 
     /**
-     * @psalm-assert-if-true !null $this->baseline
+     * @phpstan-assert-if-true !null $this->baseline
      */
     public function hasBaseline(): bool
     {
@@ -78,7 +107,7 @@ final class Source
     /**
      * @throws NoBaselineException
      *
-     * @psalm-return non-empty-string
+     * @return non-empty-string
      */
     public function baseline(): string
     {
@@ -94,7 +123,7 @@ final class Source
         return $this->includeDirectories;
     }
 
-    public function includeFiles(): FileCollection
+    public function includeFiles(): FilterFileCollection
     {
         return $this->includeFiles;
     }
@@ -104,7 +133,7 @@ final class Source
         return $this->excludeDirectories;
     }
 
-    public function excludeFiles(): FileCollection
+    public function excludeFiles(): FilterFileCollection
     {
         return $this->excludeFiles;
     }
@@ -112,11 +141,6 @@ final class Source
     public function notEmpty(): bool
     {
         return $this->includeDirectories->notEmpty() || $this->includeFiles->notEmpty();
-    }
-
-    public function restrictDeprecations(): bool
-    {
-        return $this->restrictDeprecations;
     }
 
     public function restrictNotices(): bool
@@ -162,5 +186,49 @@ final class Source
     public function ignoreSuppressionOfPhpWarnings(): bool
     {
         return $this->ignoreSuppressionOfPhpWarnings;
+    }
+
+    /**
+     * @return DeprecationTriggers
+     */
+    public function deprecationTriggers(): array
+    {
+        return $this->deprecationTriggers;
+    }
+
+    public function ignoreSelfDeprecations(): bool
+    {
+        return $this->ignoreSelfDeprecations;
+    }
+
+    public function ignoreDirectDeprecations(): bool
+    {
+        return $this->ignoreDirectDeprecations;
+    }
+
+    public function ignoreIndirectDeprecations(): bool
+    {
+        return $this->ignoreIndirectDeprecations;
+    }
+
+    public function identifyIssueTrigger(): bool
+    {
+        return $this->identifyIssueTrigger;
+    }
+
+    /**
+     * @return list<non-empty-string>
+     */
+    public function issueTriggerResolvers(): array
+    {
+        return $this->issueTriggerResolvers;
+    }
+
+    /**
+     * @return list<non-empty-string>
+     */
+    public function deprecationFilters(): array
+    {
+        return $this->deprecationFilters;
     }
 }

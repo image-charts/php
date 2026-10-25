@@ -26,9 +26,17 @@ final class LessThan extends Constraint
     /**
      * Returns a string representation of the constraint.
      */
-    public function toString(bool $exportObjects = false): string
+    public function toString(): string
     {
-        return 'is less than ' . Exporter::export($this->value, $exportObjects);
+        return 'is less than ' . Exporter::export($this->value);
+    }
+
+    /**
+     * Returns the negated string representation of the constraint.
+     */
+    protected function negatedToString(): string
+    {
+        return 'is not less than ' . Exporter::export($this->value);
     }
 
     /**

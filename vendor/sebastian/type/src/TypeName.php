@@ -9,39 +9,70 @@
  */
 namespace SebastianBergmann\Type;
 
-use function array_pop;
-use function explode;
-use function implode;
+use function assert;
+use function strrpos;
 use function substr;
 use ReflectionClass;
 
-final class TypeName
+/**
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for this library
+ */
+final readonly class TypeName
 {
     private ?string $namespaceName;
+
+    /**
+     * @var non-empty-string
+     */
     private string $simpleName;
 
+    /**
+     * @var non-empty-string
+     */
+    private string $qualifiedName;
+
+    /**
+     * @param class-string $fullClassName
+     */
     public static function fromQualifiedName(string $fullClassName): self
     {
         if ($fullClassName[0] === '\\') {
             $fullClassName = substr($fullClassName, 1);
         }
 
-        $classNameParts = explode('\\', $fullClassName);
+        $position = strrpos($fullClassName, '\\');
 
-        $simpleName    = array_pop($classNameParts);
-        $namespaceName = implode('\\', $classNameParts);
+        if ($position === false) {
+            assert($fullClassName !== '');
 
-        return new self($namespaceName, $simpleName);
+            return new self(null, $fullClassName);
+        }
+
+        $simpleName = substr($fullClassName, $position + 1);
+
+        assert($simpleName !== '');
+
+        return new self(substr($fullClassName, 0, $position), $simpleName);
     }
 
+    /**
+     * @param ReflectionClass<*> $type
+     */
     public static function fromReflection(ReflectionClass $type): self
     {
+        $simpleName = $type->getShortName();
+
+        assert($simpleName !== '');
+
         return new self(
             $type->getNamespaceName(),
-            $type->getShortName()
+            $simpleName,
         );
     }
 
+    /**
+     * @param non-empty-string $simpleName
+     */
     public function __construct(?string $namespaceName, string $simpleName)
     {
         if ($namespaceName === '') {
@@ -50,6 +81,7 @@ final class TypeName
 
         $this->namespaceName = $namespaceName;
         $this->simpleName    = $simpleName;
+        $this->qualifiedName = $namespaceName === null ? $simpleName : $namespaceName . '\\' . $simpleName;
     }
 
     public function namespaceName(): ?string
@@ -57,16 +89,20 @@ final class TypeName
         return $this->namespaceName;
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function simpleName(): string
     {
         return $this->simpleName;
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function qualifiedName(): string
     {
-        return $this->namespaceName === null
-             ? $this->simpleName
-             : $this->namespaceName . '\\' . $this->simpleName;
+        return $this->qualifiedName;
     }
 
     public function isNamespaced(): bool

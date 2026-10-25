@@ -12,35 +12,39 @@ namespace PHPUnit\Framework\Attributes;
 use Attribute;
 
 /**
- * @psalm-immutable
+ * @immutable
  *
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  */
 #[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final class DataProviderExternal
+final readonly class DataProviderExternal
 {
     /**
-     * @psalm-var class-string
+     * @var class-string
      */
-    private readonly string $className;
+    private string $className;
 
     /**
-     * @psalm-var non-empty-string
+     * @var non-empty-string
      */
-    private readonly string $methodName;
+    private string $methodName;
+    private bool $validateArgumentCount;
+    private bool $skipWhenEmpty;
 
     /**
-     * @psalm-param class-string $className
-     * @psalm-param non-empty-string $methodName
+     * @param class-string     $className
+     * @param non-empty-string $methodName
      */
-    public function __construct(string $className, string $methodName)
+    public function __construct(string $className, string $methodName, bool $validateArgumentCount = true, bool $skipWhenEmpty = false)
     {
-        $this->className  = $className;
-        $this->methodName = $methodName;
+        $this->className             = $className;
+        $this->methodName            = $methodName;
+        $this->validateArgumentCount = $validateArgumentCount;
+        $this->skipWhenEmpty         = $skipWhenEmpty;
     }
 
     /**
-     * @psalm-return class-string
+     * @return class-string
      */
     public function className(): string
     {
@@ -48,10 +52,20 @@ final class DataProviderExternal
     }
 
     /**
-     * @psalm-return non-empty-string
+     * @return non-empty-string
      */
     public function methodName(): string
     {
         return $this->methodName;
+    }
+
+    public function validateArgumentCount(): bool
+    {
+        return $this->validateArgumentCount;
+    }
+
+    public function skipWhenEmpty(): bool
+    {
+        return $this->skipWhenEmpty;
     }
 }

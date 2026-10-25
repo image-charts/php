@@ -9,29 +9,35 @@
  */
 namespace PHPUnit\Framework\Constraint;
 
-use PHPUnit\Framework\Exception;
+use function is_iterable;
 use PHPUnit\Framework\ExpectationFailedException;
+use PHPUnit\Framework\NativeType;
 
 /**
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  */
 final class TraversableContainsOnly extends Constraint
 {
-    private Constraint $constraint;
+    private readonly Constraint $constraint;
     private readonly string $type;
 
-    /**
-     * @throws Exception
-     */
-    public function __construct(string $type, bool $isNativeType = true)
+    public static function forNativeType(NativeType $type): self
     {
-        if ($isNativeType) {
-            $this->constraint = new IsType($type);
-        } else {
-            $this->constraint = new IsInstanceOf($type);
-        }
+        return new self(new IsType($type), $type->value);
+    }
 
-        $this->type = $type;
+    /**
+     * @param class-string $type
+     */
+    public static function forClassOrInterface(string $type): self
+    {
+        return new self(new IsInstanceOf($type), $type);
+    }
+
+    private function __construct(IsInstanceOf|IsType $constraint, string $type)
+    {
+        $this->constraint = $constraint;
+        $this->type       = $type;
     }
 
     /**
@@ -48,13 +54,17 @@ final class TraversableContainsOnly extends Constraint
      */
     public function evaluate(mixed $other, string $description = '', bool $returnResult = false): bool
     {
-        $success = true;
+        if (!is_iterable($other)) {
+            $success = false;
+        } else {
+            $success = true;
 
-        foreach ($other as $item) {
-            if (!$this->constraint->evaluate($item, '', true)) {
-                $success = false;
+            foreach ($other as $item) {
+                if ($this->constraint->evaluate($item, '', true) === false) {
+                    $success = false;
 
-                break;
+                    break;
+                }
             }
         }
 
@@ -71,5 +81,13 @@ final class TraversableContainsOnly extends Constraint
     public function toString(): string
     {
         return 'contains only values of type "' . $this->type . '"';
+    }
+
+    /**
+     * Returns the negated string representation of the constraint.
+     */
+    protected function negatedToString(): string
+    {
+        return 'does not contain only values of type "' . $this->type . '"';
     }
 }

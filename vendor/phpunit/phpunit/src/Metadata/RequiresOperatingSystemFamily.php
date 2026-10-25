@@ -10,38 +10,34 @@
 namespace PHPUnit\Metadata;
 
 /**
- * @psalm-immutable
+ * @immutable
  *
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  */
-final class RequiresOperatingSystemFamily extends Metadata
+final readonly class RequiresOperatingSystemFamily extends Metadata
 {
     /**
-     * @psalm-var non-empty-string
+     * @var non-empty-string
      */
-    private readonly string $operatingSystemFamily;
+    private string $operatingSystemFamily;
 
     /**
-     * @psalm-param 0|1 $level
-     * @psalm-param non-empty-string $operatingSystemFamily
+     * @param non-empty-string $operatingSystemFamily
      */
-    protected function __construct(int $level, string $operatingSystemFamily)
+    protected function __construct(Level $level, string $operatingSystemFamily)
     {
         parent::__construct($level);
 
         $this->operatingSystemFamily = $operatingSystemFamily;
     }
 
-    /**
-     * @psalm-assert-if-true RequiresOperatingSystemFamily $this
-     */
-    public function isRequiresOperatingSystemFamily(): bool
+    public function isRequiresOperatingSystemFamily(): true
     {
         return true;
     }
 
     /**
-     * @psalm-return non-empty-string
+     * @return non-empty-string
      */
     public function operatingSystemFamily(): string
     {

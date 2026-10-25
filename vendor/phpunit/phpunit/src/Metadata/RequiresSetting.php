@@ -10,28 +10,27 @@
 namespace PHPUnit\Metadata;
 
 /**
- * @psalm-immutable
+ * @immutable
  *
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  */
-final class RequiresSetting extends Metadata
+final readonly class RequiresSetting extends Metadata
 {
     /**
-     * @psalm-var non-empty-string
+     * @var non-empty-string
      */
-    private readonly string $setting;
+    private string $setting;
 
     /**
-     * @psalm-var non-empty-string
+     * @var non-empty-string
      */
-    private readonly string $value;
+    private string $value;
 
     /**
-     * @psalm-param 0|1 $level
-     * @psalm-param non-empty-string $setting
-     * @psalm-param non-empty-string $value
+     * @param non-empty-string $setting
+     * @param non-empty-string $value
      */
-    protected function __construct(int $level, string $setting, string $value)
+    protected function __construct(Level $level, string $setting, string $value)
     {
         parent::__construct($level);
 
@@ -39,16 +38,13 @@ final class RequiresSetting extends Metadata
         $this->value   = $value;
     }
 
-    /**
-     * @psalm-assert-if-true RequiresSetting $this
-     */
-    public function isRequiresSetting(): bool
+    public function isRequiresSetting(): true
     {
         return true;
     }
 
     /**
-     * @psalm-return non-empty-string
+     * @return non-empty-string
      */
     public function setting(): string
     {
@@ -56,7 +52,7 @@ final class RequiresSetting extends Metadata
     }
 
     /**
-     * @psalm-return non-empty-string
+     * @return non-empty-string
      */
     public function value(): string
     {

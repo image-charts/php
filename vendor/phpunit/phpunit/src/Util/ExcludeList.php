@@ -10,6 +10,8 @@
 namespace PHPUnit\Util;
 
 use const PHP_OS_FAMILY;
+use function array_any;
+use function assert;
 use function class_exists;
 use function defined;
 use function dirname;
@@ -26,8 +28,6 @@ use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use SebastianBergmann\CliParser\Parser as CliParser;
 use SebastianBergmann\CodeCoverage\CodeCoverage;
-use SebastianBergmann\CodeUnit\CodeUnit;
-use SebastianBergmann\CodeUnitReverseLookup\Wizard;
 use SebastianBergmann\Comparator\Comparator;
 use SebastianBergmann\Complexity\Calculator;
 use SebastianBergmann\Diff\Diff;
@@ -44,6 +44,7 @@ use SebastianBergmann\Template\Template;
 use SebastianBergmann\Timer\Timer;
 use SebastianBergmann\Type\TypeName;
 use SebastianBergmann\Version;
+use staabm\SideEffectsDetector\SideEffectsDetector;
 use TheSeer\Tokenizer\Tokenizer;
 
 /**
@@ -52,9 +53,9 @@ use TheSeer\Tokenizer\Tokenizer;
 final class ExcludeList
 {
     /**
-     * @psalm-var array<string,int>
+     * @var non-empty-array<class-string, positive-int>
      */
-    private const EXCLUDED_CLASS_NAMES = [
+    private const array EXCLUDED_CLASS_NAMES = [
         // composer
         ClassLoader::class => 1,
 
@@ -90,12 +91,6 @@ final class ExcludeList
 
         // sebastian/cli-parser
         CliParser::class => 1,
-
-        // sebastian/code-unit
-        CodeUnit::class => 1,
-
-        // sebastian/code-unit-reverse-lookup
-        Wizard::class => 1,
 
         // sebastian/comparator
         Comparator::class => 1,
@@ -133,19 +128,22 @@ final class ExcludeList
         // sebastian/version
         Version::class => 1,
 
+        // staabm/side-effects-detector
+        SideEffectsDetector::class => 1,
+
         // theseer/tokenizer
         Tokenizer::class => 1,
     ];
 
     /**
-     * @psalm-var list<string>
+     * @var list<string>
      */
     private static array $directories = [];
     private static bool $initialized  = false;
     private readonly bool $enabled;
 
     /**
-     * @psalm-param non-empty-string $directory
+     * @param non-empty-string $directory
      *
      * @throws InvalidDirectoryException
      */
@@ -155,7 +153,11 @@ final class ExcludeList
             throw new InvalidDirectoryException($directory);
         }
 
-        self::$directories[] = realpath($directory);
+        $directory = realpath($directory);
+
+        assert($directory !== false);
+
+        self::$directories[] = $directory;
     }
 
     public function __construct(?bool $enabled = null)
@@ -168,7 +170,7 @@ final class ExcludeList
     }
 
     /**
-     * @psalm-return list<string>
+     * @return list<string>
      */
     public function getExcludedDirectories(): array
     {
@@ -185,13 +187,10 @@ final class ExcludeList
 
         self::initialize();
 
-        foreach (self::$directories as $directory) {
-            if (str_starts_with($file, $directory)) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any(
+            self::$directories,
+            static fn (string $directory) => str_starts_with($file, $directory),
+        );
     }
 
     private static function initialize(): void
@@ -205,7 +204,13 @@ final class ExcludeList
                 continue;
             }
 
-            $directory = (new ReflectionClass($className))->getFileName();
+            $directory = new ReflectionClass($className)->getFileName();
+
+            if ($directory === false) {
+                // @codeCoverageIgnoreStart
+                continue;
+                // @codeCoverageIgnoreEnd
+            }
 
             for ($i = 0; $i < $parent; $i++) {
                 $directory = dirname($directory);

@@ -9,47 +9,46 @@
  */
 namespace PHPUnit\Event\Code;
 
-use const DEBUG_BACKTRACE_IGNORE_ARGS;
-use const DEBUG_BACKTRACE_PROVIDE_OBJECT;
-use function assert;
-use function debug_backtrace;
-use function is_numeric;
-use PHPUnit\Event\Facade as EventFacade;
 use PHPUnit\Event\TestData\DataFromDataProvider;
 use PHPUnit\Event\TestData\DataFromTestDependency;
-use PHPUnit\Event\TestData\MoreThanOneDataSetFromDataProviderException;
 use PHPUnit\Event\TestData\TestDataCollection;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Metadata\MetadataCollection;
 use PHPUnit\Metadata\Parser\Registry as MetadataRegistry;
 use PHPUnit\Util\Exporter;
 use PHPUnit\Util\Reflection;
+use PHPUnit\Util\Test as TestUtil;
 
 /**
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
-final class TestMethodBuilder
+final readonly class TestMethodBuilder
 {
-    /**
-     * @throws MoreThanOneDataSetFromDataProviderException
-     */
-    public static function fromTestCase(TestCase $testCase): TestMethod
+    public static function fromTestCase(TestCase $testCase, bool $useTestCaseForTestDox = true): TestMethod
     {
         $methodName = $testCase->name();
+        $location   = Reflection::sourceLocationFor($testCase::class, $methodName);
 
-        assert(!empty($methodName));
-
-        $location = Reflection::sourceLocationFor($testCase::class, $methodName);
+        if ($useTestCaseForTestDox) {
+            $testDox = TestDoxBuilder::fromTestCase($testCase);
+        } else {
+            $testDox = TestDoxBuilder::fromClassNameAndMethodName($testCase::class, $testCase->name());
+        }
 
         return new TestMethod(
             $testCase::class,
             $methodName,
             $location['file'],
             $location['line'],
-            TestDoxBuilder::fromTestCase($testCase),
-            MetadataRegistry::parser()->forClassAndMethod($testCase::class, $methodName),
+            $testDox,
+            self::metadataFor($testCase::class, $methodName),
             self::dataFor($testCase),
+            $testCase->repetition(),
+            $testCase->totalRepetitions(),
+            $testCase->attempt(),
+            $testCase->maxAttempts(),
         );
     }
 
@@ -58,39 +57,49 @@ final class TestMethodBuilder
      */
     public static function fromCallStack(): TestMethod
     {
-        foreach (debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS) as $frame) {
-            if (isset($frame['object']) && $frame['object'] instanceof TestCase) {
-                return $frame['object']->valueObjectForEvents();
-            }
-        }
-
-        throw new NoTestCaseObjectOnCallStackException;
+        return TestUtil::currentTestCase()->valueObjectForEvents();
     }
 
     /**
-     * @throws MoreThanOneDataSetFromDataProviderException
+     * The metadata of the test method, without the closure that a
+     * #[DataProviderClosure] attribute declares. The closure is only used to
+     * build the test suite, and an event that carries it cannot be serialized,
+     * while the events of a test that runs in a child process are serialized
+     * to be forwarded to the main process.
+     *
+     * @param class-string     $className
+     * @param non-empty-string $methodName
      */
+    private static function metadataFor(string $className, string $methodName): MetadataCollection
+    {
+        $metadata = [];
+
+        foreach (MetadataRegistry::parser()->forClassAndMethod($className, $methodName) as $item) {
+            if ($item->isDataProviderClosure()) {
+                continue;
+            }
+
+            $metadata[] = $item;
+        }
+
+        return MetadataCollection::fromArray($metadata);
+    }
+
     private static function dataFor(TestCase $testCase): TestDataCollection
     {
         $testData = [];
 
         if ($testCase->usesDataProvider()) {
-            $dataSetName = $testCase->dataName();
-
-            if (is_numeric($dataSetName)) {
-                $dataSetName = (int) $dataSetName;
-            }
-
             $testData[] = DataFromDataProvider::from(
-                $dataSetName,
-                Exporter::export($testCase->providedData(), EventFacade::emitter()->exportsObjects()),
+                $testCase->dataName(),
+                Exporter::shortenedRecursiveExport($testCase->providedData()),
                 $testCase->dataSetAsStringWithData(),
             );
         }
 
         if ($testCase->hasDependencyInput()) {
             $testData[] = DataFromTestDependency::from(
-                Exporter::export($testCase->dependencyInput(), EventFacade::emitter()->exportsObjects()),
+                Exporter::shortenedRecursiveExport($testCase->dependencyInput()),
             );
         }
 

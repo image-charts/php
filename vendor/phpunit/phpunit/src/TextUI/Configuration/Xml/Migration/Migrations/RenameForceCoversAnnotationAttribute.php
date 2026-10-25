@@ -18,7 +18,7 @@ use DOMElement;
  *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
-final class RenameForceCoversAnnotationAttribute implements Migration
+final readonly class RenameForceCoversAnnotationAttribute implements Migration
 {
     public function migrate(DOMDocument $document): void
     {
@@ -26,9 +26,11 @@ final class RenameForceCoversAnnotationAttribute implements Migration
 
         assert($root instanceof DOMElement);
 
+        // @codeCoverageIgnoreStart
         if ($root->hasAttribute('requireCoverageMetadata')) {
             return;
         }
+        // @codeCoverageIgnoreEnd
 
         if (!$root->hasAttribute('forceCoversAnnotation')) {
             return;

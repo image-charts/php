@@ -12,16 +12,16 @@ namespace PHPUnit\Metadata\Api;
 use function array_flip;
 use function array_key_exists;
 use function array_unique;
+use function array_values;
 use function assert;
 use function strtolower;
 use function trim;
 use PHPUnit\Framework\TestSize\TestSize;
-use PHPUnit\Metadata\Covers;
 use PHPUnit\Metadata\CoversClass;
 use PHPUnit\Metadata\CoversFunction;
 use PHPUnit\Metadata\Group;
 use PHPUnit\Metadata\Parser\Registry;
-use PHPUnit\Metadata\Uses;
+use PHPUnit\Metadata\RequiresPhpExtension;
 use PHPUnit\Metadata\UsesClass;
 use PHPUnit\Metadata\UsesFunction;
 
@@ -33,15 +33,44 @@ use PHPUnit\Metadata\UsesFunction;
 final class Groups
 {
     /**
-     * @var array<string, array<int, string>>
+     * @var array<string, list<non-empty-string>>
      */
     private static array $groupCache = [];
 
     /**
-     * @psalm-param class-string $className
-     * @psalm-param non-empty-string $methodName
+     * The metadata that backs --covers, --uses and --requires-php-extension is
+     * mapped to a group of its own so that these options can be implemented as
+     * a selection by group. Everything that selects tests this way has to name
+     * these groups the same way, which is why they are only named here.
      *
-     * @psalm-return array<int, string>
+     * @return non-empty-string
+     */
+    public static function virtualGroupForCovers(string $name): string
+    {
+        return '__phpunit_covers_' . self::canonicalizeName($name);
+    }
+
+    /**
+     * @return non-empty-string
+     */
+    public static function virtualGroupForUses(string $name): string
+    {
+        return '__phpunit_uses_' . self::canonicalizeName($name);
+    }
+
+    /**
+     * @return non-empty-string
+     */
+    public static function virtualGroupForRequiredPhpExtension(string $name): string
+    {
+        return '__phpunit_requires_php_extension' . self::canonicalizeName($name);
+    }
+
+    /**
+     * @param class-string     $className
+     * @param non-empty-string $methodName
+     *
+     * @return list<non-empty-string>
      */
     public function groups(string $className, string $methodName, bool $includeVirtual = true): array
     {
@@ -59,52 +88,56 @@ final class Groups
             $groups[] = $group->groupName();
         }
 
-        if ($groups === []) {
-            $groups[] = 'default';
-        }
-
         if (!$includeVirtual) {
-            return self::$groupCache[$key] = array_unique($groups);
+            return self::$groupCache[$key] = array_values(array_unique($groups));
         }
 
         foreach (Registry::parser()->forClassAndMethod($className, $methodName) as $metadata) {
-            if ($metadata->isCoversClass() || $metadata->isCoversFunction()) {
-                assert($metadata instanceof CoversClass || $metadata instanceof CoversFunction);
+            if ($metadata->isCoversClass()) {
+                assert($metadata instanceof CoversClass);
 
-                $groups[] = '__phpunit_covers_' . $this->canonicalizeName($metadata->asStringForCodeUnitMapper());
-
-                continue;
-            }
-
-            if ($metadata->isCovers()) {
-                assert($metadata instanceof Covers);
-
-                $groups[] = '__phpunit_covers_' . $this->canonicalizeName($metadata->target());
+                $groups[] = self::virtualGroupForCovers($metadata->className());
 
                 continue;
             }
 
-            if ($metadata->isUsesClass() || $metadata->isUsesFunction()) {
-                assert($metadata instanceof UsesClass || $metadata instanceof UsesFunction);
+            if ($metadata->isCoversFunction()) {
+                assert($metadata instanceof CoversFunction);
 
-                $groups[] = '__phpunit_uses_' . $this->canonicalizeName($metadata->asStringForCodeUnitMapper());
+                $groups[] = self::virtualGroupForCovers($metadata->functionName());
 
                 continue;
             }
 
-            if ($metadata->isUses()) {
-                assert($metadata instanceof Uses);
+            if ($metadata->isUsesClass()) {
+                assert($metadata instanceof UsesClass);
 
-                $groups[] = '__phpunit_uses_' . $this->canonicalizeName($metadata->target());
+                $groups[] = self::virtualGroupForUses($metadata->className());
+
+                continue;
+            }
+
+            if ($metadata->isUsesFunction()) {
+                assert($metadata instanceof UsesFunction);
+
+                $groups[] = self::virtualGroupForUses($metadata->functionName());
+
+                continue;
+            }
+
+            if ($metadata->isRequiresPhpExtension()) {
+                assert($metadata instanceof RequiresPhpExtension);
+
+                $groups[] = self::virtualGroupForRequiredPhpExtension($metadata->extension());
             }
         }
 
-        return self::$groupCache[$key] = array_unique($groups);
+        return self::$groupCache[$key] = array_values(array_unique($groups));
     }
 
     /**
-     * @psalm-param class-string $className
-     * @psalm-param non-empty-string $methodName
+     * @param class-string     $className
+     * @param non-empty-string $methodName
      */
     public function size(string $className, string $methodName): TestSize
     {
@@ -125,7 +158,7 @@ final class Groups
         return TestSize::unknown();
     }
 
-    private function canonicalizeName(string $name): string
+    private static function canonicalizeName(string $name): string
     {
         return strtolower(trim($name, '\\'));
     }

@@ -9,9 +9,13 @@
  */
 namespace SebastianBergmann;
 
+use const DIRECTORY_SEPARATOR;
+use function array_slice;
+use function assert;
 use function end;
 use function explode;
 use function fclose;
+use function implode;
 use function is_dir;
 use function is_resource;
 use function proc_close;
@@ -20,20 +24,36 @@ use function stream_get_contents;
 use function substr_count;
 use function trim;
 
-final class Version
+final readonly class Version
 {
-    private readonly string $version;
+    /**
+     * @var non-empty-string
+     */
+    private string $version;
 
+    /**
+     * @param non-empty-string $release
+     * @param non-empty-string $path
+     */
     public function __construct(string $release, string $path)
     {
         $this->version = $this->generate($release, $path);
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function asString(): string
     {
         return $this->version;
     }
 
+    /**
+     * @param non-empty-string $release
+     * @param non-empty-string $path
+     *
+     * @return non-empty-string
+     */
     private function generate(string $release, string $path): string
     {
         if (substr_count($release, '.') + 1 === 3) {
@@ -42,9 +62,9 @@ final class Version
             $version = $release . '-dev';
         }
 
-        $git = $this->getGitInformation($path);
+        $git = $this->getGitInformation($path, $release);
 
-        if (!$git) {
+        if ($git === false) {
             return $version;
         }
 
@@ -57,27 +77,57 @@ final class Version
         return $release . '-' . end($git);
     }
 
-    private function getGitInformation(string $path): bool|string
+    /**
+     * @param non-empty-string $path
+     * @param non-empty-string $release
+     *
+     * @return false|non-empty-string
+     */
+    private function getGitInformation(string $path, string $release): false|string
     {
         if (!is_dir($path . DIRECTORY_SEPARATOR . '.git')) {
             return false;
         }
 
-        $process = proc_open(
-            'git describe --tags',
+        if (substr_count($release, '.') + 1 === 3) {
+            $series = implode('.', array_slice(explode('.', $release), 0, 2));
+
+            $result = $this->describe($path, ['--match', $series . '.*']);
+
+            if ($result !== false) {
+                return $result;
+            }
+        }
+
+        return $this->describe($path, []);
+    }
+
+    /**
+     * @param non-empty-string $path
+     * @param list<string>     $arguments
+     *
+     * @return false|non-empty-string
+     */
+    private function describe(string $path, array $arguments): false|string
+    {
+        $process = @proc_open(
+            ['git', 'describe', '--tags', ...$arguments],
             [
                 1 => ['pipe', 'w'],
                 2 => ['pipe', 'w'],
             ],
             $pipes,
-            $path
+            $path,
         );
 
         if (!is_resource($process)) {
             return false;
         }
 
-        $result = trim(stream_get_contents($pipes[1]));
+        assert(isset($pipes[1]) && is_resource($pipes[1]));
+        assert(isset($pipes[2]) && is_resource($pipes[2]));
+
+        $result = trim((string) stream_get_contents($pipes[1]));
 
         fclose($pipes[1]);
         fclose($pipes[2]);
@@ -87,6 +137,8 @@ final class Version
         if ($returnCode !== 0) {
             return false;
         }
+
+        assert($result !== '');
 
         return $result;
     }

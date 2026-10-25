@@ -9,14 +9,19 @@
  */
 namespace SebastianBergmann\Type;
 
+use function array_any;
+use function assert;
 use function count;
 use function implode;
 use function sort;
 
+/**
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for this library
+ */
 final class UnionType extends Type
 {
     /**
-     * @psalm-var non-empty-list<Type>
+     * @var non-empty-list<Type>
      */
     private array $types;
 
@@ -28,25 +33,27 @@ final class UnionType extends Type
         $this->ensureMinimumOfTwoTypes(...$types);
         $this->ensureOnlyValidTypes(...$types);
 
+        assert($types !== []);
+
         $this->types = $types;
     }
 
     public function isAssignable(Type $other): bool
     {
-        foreach ($this->types as $type) {
-            if ($type->isAssignable($other)) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($this->types, static fn (Type $type) => $type->isAssignable($other));
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function asString(): string
     {
         return $this->name();
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function name(): string
     {
         $types = [];
@@ -68,18 +75,9 @@ final class UnionType extends Type
 
     public function allowsNull(): bool
     {
-        foreach ($this->types as $type) {
-            if ($type instanceof NullType) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($this->types, static fn (Type $type) => $type instanceof NullType);
     }
 
-    /**
-     * @psalm-assert-if-true UnionType $this
-     */
     public function isUnion(): bool
     {
         return true;
@@ -87,17 +85,11 @@ final class UnionType extends Type
 
     public function containsIntersectionTypes(): bool
     {
-        foreach ($this->types as $type) {
-            if ($type->isIntersection()) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($this->types, static fn (Type $type) => $type->isIntersection());
     }
 
     /**
-     * @psalm-return non-empty-list<Type>
+     * @return non-empty-list<Type>
      */
     public function types(): array
     {
@@ -111,7 +103,7 @@ final class UnionType extends Type
     {
         if (count($types) < 2) {
             throw new RuntimeException(
-                'A union type must be composed of at least two types'
+                'A union type must be composed of at least two types',
             );
         }
     }
@@ -124,13 +116,13 @@ final class UnionType extends Type
         foreach ($types as $type) {
             if ($type instanceof UnknownType) {
                 throw new RuntimeException(
-                    'A union type must not be composed of an unknown type'
+                    'A union type must not be composed of an unknown type',
                 );
             }
 
             if ($type instanceof VoidType) {
                 throw new RuntimeException(
-                    'A union type must not be composed of a void type'
+                    'A union type must not be composed of a void type',
                 );
             }
         }

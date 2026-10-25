@@ -9,6 +9,7 @@
  */
 namespace PHPUnit\Event;
 
+use function array_any;
 use function array_key_exists;
 use function class_exists;
 use function class_implements;
@@ -24,13 +25,13 @@ use function sprintf;
 final class TypeMap
 {
     /**
-     * @psalm-var array<class-string, class-string>
+     * @var array<class-string, class-string>
      */
     private array $mapping = [];
 
     /**
-     * @psalm-param class-string $subscriberInterface
-     * @psalm-param class-string $eventClass
+     * @param class-string $subscriberInterface
+     * @param class-string $eventClass
      *
      * @throws EventAlreadyAssignedException
      * @throws InvalidEventException
@@ -53,13 +54,10 @@ final class TypeMap
 
     public function isKnownSubscriberType(Subscriber $subscriber): bool
     {
-        foreach (class_implements($subscriber) as $interface) {
-            if (array_key_exists($interface, $this->mapping)) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any(
+            class_implements($subscriber),
+            fn (string $interface) => array_key_exists($interface, $this->mapping),
+        );
     }
 
     public function isKnownEventType(Event $event): bool
@@ -70,7 +68,7 @@ final class TypeMap
     /**
      * @throws MapError
      *
-     * @psalm-return class-string
+     * @return class-string
      */
     public function map(Subscriber $subscriber): string
     {
@@ -89,7 +87,7 @@ final class TypeMap
     }
 
     /**
-     * @psalm-param class-string $subscriberInterface
+     * @param class-string $subscriberInterface
      *
      * @throws UnknownSubscriberException
      */
@@ -106,7 +104,7 @@ final class TypeMap
     }
 
     /**
-     * @psalm-param class-string $eventClass
+     * @param class-string $eventClass
      *
      * @throws UnknownEventException
      */
@@ -123,7 +121,7 @@ final class TypeMap
     }
 
     /**
-     * @psalm-param class-string $subscriberInterface
+     * @param class-string $subscriberInterface
      *
      * @throws InvalidSubscriberException
      */
@@ -140,7 +138,7 @@ final class TypeMap
     }
 
     /**
-     * @psalm-param class-string $eventClass
+     * @param class-string $eventClass
      *
      * @throws InvalidEventException
      */
@@ -157,7 +155,7 @@ final class TypeMap
     }
 
     /**
-     * @psalm-param class-string $subscriberInterface
+     * @param class-string $subscriberInterface
      *
      * @throws SubscriberTypeAlreadyRegisteredException
      */
@@ -174,7 +172,7 @@ final class TypeMap
     }
 
     /**
-     * @psalm-param class-string $eventClass
+     * @param class-string $eventClass
      *
      * @throws EventAlreadyAssignedException
      */

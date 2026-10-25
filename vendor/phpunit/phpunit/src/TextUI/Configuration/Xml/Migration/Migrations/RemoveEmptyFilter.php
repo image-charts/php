@@ -9,6 +9,7 @@
  */
 namespace PHPUnit\TextUI\XmlConfiguration;
 
+use function assert;
 use function sprintf;
 use DOMDocument;
 use DOMElement;
@@ -18,7 +19,7 @@ use DOMElement;
  *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
-final class RemoveEmptyFilter implements Migration
+final readonly class RemoveEmptyFilter implements Migration
 {
     /**
      * @throws MigrationException
@@ -29,14 +30,24 @@ final class RemoveEmptyFilter implements Migration
 
         if ($whitelist instanceof DOMElement) {
             $this->ensureEmpty($whitelist);
-            $whitelist->parentNode->removeChild($whitelist);
+
+            $whitelistParent = $whitelist->parentNode;
+
+            assert($whitelistParent !== null);
+
+            $whitelistParent->removeChild($whitelist);
         }
 
         $filter = $document->getElementsByTagName('filter')->item(0);
 
         if ($filter instanceof DOMElement) {
             $this->ensureEmpty($filter);
-            $filter->parentNode->removeChild($filter);
+
+            $filterParent = $filter->parentNode;
+
+            assert($filterParent !== null);
+
+            $filterParent->removeChild($filter);
         }
     }
 
@@ -45,6 +56,7 @@ final class RemoveEmptyFilter implements Migration
      */
     private function ensureEmpty(DOMElement $element): void
     {
+        // @codeCoverageIgnoreStart
         if ($element->attributes->length > 0) {
             throw new MigrationException(sprintf('%s element has unexpected attributes', $element->nodeName));
         }
@@ -52,5 +64,6 @@ final class RemoveEmptyFilter implements Migration
         if ($element->getElementsByTagName('*')->length > 0) {
             throw new MigrationException(sprintf('%s element has unexpected children', $element->nodeName));
         }
+        // @codeCoverageIgnoreEnd
     }
 }

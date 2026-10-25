@@ -14,18 +14,18 @@ namespace PHPUnit\Framework\TestSize;
  *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  *
- * @psalm-immutable
+ * @immutable
  */
-final class Unknown extends TestSize
+final readonly class Unknown extends TestSize
 {
-    /**
-     * @psalm-assert-if-true Unknown $this
-     */
-    public function isUnknown(): bool
+    public function isUnknown(): true
     {
         return true;
     }
 
+    /**
+     * @return 'unknown'
+     */
     public function asString(): string
     {
         return 'unknown';

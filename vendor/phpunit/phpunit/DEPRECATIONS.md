@@ -8,75 +8,12 @@ This functionality is currently [soft-deprecated](https://phpunit.de/backward-co
 
 #### Assertions, Constraints, and Expectations
 
-| Issue                                                             | Description                                  | Since  | Replacement |
-|-------------------------------------------------------------------|----------------------------------------------|--------|-------------|
-| [#5472](https://github.com/sebastianbergmann/phpunit/issues/5472) | `Assert::assertStringNotMatchesFormat()`     | 10.4.0 |             |
-| [#5472](https://github.com/sebastianbergmann/phpunit/issues/5472) | `Assert::assertStringNotMatchesFormatFile()` | 10.4.0 |             |
-
-#### Test Double API
-
-| Issue                                                             | Description                                       | Since  | Replacement                                                                             |
-|-------------------------------------------------------------------|---------------------------------------------------|--------|-----------------------------------------------------------------------------------------|
-| [#5240](https://github.com/sebastianbergmann/phpunit/issues/5240) | `TestCase::createTestProxy()`                     | 10.1.0 |                                                                                         |
-| [#5241](https://github.com/sebastianbergmann/phpunit/issues/5241) | `TestCase::getMockForAbstractClass()`             | 10.1.0 |                                                                                         |
-| [#5242](https://github.com/sebastianbergmann/phpunit/issues/5242) | `TestCase::getMockFromWsdl()`                     | 10.1.0 |                                                                                         |
-| [#5243](https://github.com/sebastianbergmann/phpunit/issues/5243) | `TestCase::getMockForTrait()`                     | 10.1.0 |                                                                                         |
-| [#5244](https://github.com/sebastianbergmann/phpunit/issues/5244) | `TestCase::getObjectForTrait()`                   | 10.1.0 |                                                                                         |
-| [#5305](https://github.com/sebastianbergmann/phpunit/issues/5305) | `MockBuilder::getMockForAbstractClass()`          | 10.1.0 |                                                                                         |
-| [#5306](https://github.com/sebastianbergmann/phpunit/issues/5306) | `MockBuilder::getMockForTrait()`                  | 10.1.0 |                                                                                         |
-| [#5307](https://github.com/sebastianbergmann/phpunit/issues/5307) | `MockBuilder::disableProxyingToOriginalMethods()` | 10.1.0 |                                                                                         |
-| [#5307](https://github.com/sebastianbergmann/phpunit/issues/5307) | `MockBuilder::enableProxyingToOriginalMethods()`  | 10.1.0 |                                                                                         |
-| [#5307](https://github.com/sebastianbergmann/phpunit/issues/5307) | `MockBuilder::setProxyTarget()`                   | 10.1.0 |                                                                                         |
-| [#5308](https://github.com/sebastianbergmann/phpunit/issues/5308) | `MockBuilder::allowMockingUnknownTypes()`         | 10.1.0 |                                                                                         |
-| [#5308](https://github.com/sebastianbergmann/phpunit/issues/5308) | `MockBuilder::disallowMockingUnknownTypes()`      | 10.1.0 |                                                                                         |
-| [#5309](https://github.com/sebastianbergmann/phpunit/issues/5309) | `MockBuilder::disableAutoload()`                  | 10.1.0 |                                                                                         |
-| [#5309](https://github.com/sebastianbergmann/phpunit/issues/5309) | `MockBuilder::enableAutoload()`                   | 10.1.0 |                                                                                         |
-| [#5315](https://github.com/sebastianbergmann/phpunit/issues/5315) | `MockBuilder::disableArgumentCloning()`           | 10.1.0 |                                                                                         |
-| [#5315](https://github.com/sebastianbergmann/phpunit/issues/5315) | `MockBuilder::enableArgumentCloning()`            | 10.1.0 |                                                                                         |
-| [#5320](https://github.com/sebastianbergmann/phpunit/issues/5320) | `MockBuilder::addMethods()`                       | 10.1.0 |                                                                                         |
-| [#5423](https://github.com/sebastianbergmann/phpunit/issues/5423) | `TestCase::onConsecutiveCalls()`                  | 10.3.0 | Use `$double->willReturn()` instead of `$double->will($this->onConsecutiveCalls())`     |
-| [#5423](https://github.com/sebastianbergmann/phpunit/issues/5423) | `TestCase::returnArgument()`                      | 10.3.0 | Use `$double->willReturnArgument()` instead of `$double->will($this->returnArgument())` |
-| [#5423](https://github.com/sebastianbergmann/phpunit/issues/5423) | `TestCase::returnCallback()`                      | 10.3.0 | Use `$double->willReturnCallback()` instead of `$double->will($this->returnCallback())` |
-| [#5423](https://github.com/sebastianbergmann/phpunit/issues/5423) | `TestCase::returnSelf()`                          | 10.3.0 | Use `$double->willReturnSelf()` instead of `$double->will($this->returnSelf())`         |
-| [#5423](https://github.com/sebastianbergmann/phpunit/issues/5423) | `TestCase::returnValue()`                         | 10.3.0 | Use `$double->willReturn()` instead of `$double->will($this->returnValue())`            |
-| [#5423](https://github.com/sebastianbergmann/phpunit/issues/5423) | `TestCase::returnValueMap()`                      | 10.3.0 | Use `$double->willReturnMap()` instead of `$double->will($this->returnValueMap())`      |
-
-#### Miscellaneous
-
-| Issue                                                             | Description                                                    | Since  | Replacement                                                        |
-|-------------------------------------------------------------------|----------------------------------------------------------------|--------|--------------------------------------------------------------------|
-| [#5236](https://github.com/sebastianbergmann/phpunit/issues/5236) | `PHPUnit\Framework\Attributes\CodeCoverageIgnore()`            | 10.1.0 |                                                                    |
-| [#5214](https://github.com/sebastianbergmann/phpunit/issues/5214) | `TestCase::iniSet()`                                           | 10.3.0 |                                                                    |
-| [#5216](https://github.com/sebastianbergmann/phpunit/issues/5216) | `TestCase::setLocale()`                                        | 10.3.0 |                                                                    |
-| [#5236](https://github.com/sebastianbergmann/phpunit/issues/5513) | `PHPUnit\Framework\Attributes\IgnoreClassForCodeCoverage()`    | 10.4.0 | Use `@codeCoverageIgnore` annotation in the class' doc-comment     |
-| [#5236](https://github.com/sebastianbergmann/phpunit/issues/5513) | `PHPUnit\Framework\Attributes\IgnoreMethodForCodeCoverage()`   | 10.4.0 | Use `@codeCoverageIgnore` annotation in the method's doc-comment   |
-| [#5236](https://github.com/sebastianbergmann/phpunit/issues/5513) | `PHPUnit\Framework\Attributes\IgnoreFunctionForCodeCoverage()` | 10.4.0 | Use `@codeCoverageIgnore` annotation in the function's doc-comment |
-
-### Running Tests
-
-| Issue                                                             | Description                                                                                           | Since  | Replacement |
-|-------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|--------|-------------|
-| [#5481](https://github.com/sebastianbergmann/phpunit/issues/5481) | `dataSet` attribute for `testCaseMethod` elements in the XML document generated by `--list-tests-xml` | 10.4.0 |             |
-
-### Extending PHPUnit
-
-| Issue | Description                                                                                                                  | Since  | Replacement                                                                    |
-|-------|------------------------------------------------------------------------------------------------------------------------------|--------|--------------------------------------------------------------------------------|
-|       | `PHPUnit\TextUI\Configuration\Configuration::coverageExcludeDirectories()`                                                   | 10.2.0 | `PHPUnit\TextUI\Configuration\Configuration::source()->excludeDirectories()`   |
-|       | `PHPUnit\TextUI\Configuration\Configuration::coverageExcludeFiles()`                                                         | 10.2.0 | `PHPUnit\TextUI\Configuration\Configuration::source()->excludeFiles()`         |
-|       | `PHPUnit\TextUI\Configuration\Configuration::coverageIncludeDirectories()`                                                   | 10.2.0 | `PHPUnit\TextUI\Configuration\Configuration::source()->includeDirectories()`   |
-|       | `PHPUnit\TextUI\Configuration\Configuration::coverageIncludeFiles()`                                                         | 10.2.0 | `PHPUnit\TextUI\Configuration\Configuration::source()->includeFiles()`         |
-|       | `PHPUnit\TextUI\Configuration\Configuration::loadPharExtensions()`                                                           | 10.2.0 | `PHPUnit\TextUI\Configuration\Configuration::noExtensions()`                   |
-|       | `PHPUnit\TextUI\Configuration\Configuration::hasNonEmptyListOfFilesToBeIncludedInCodeCoverageReport()`                       | 10.2.0 | `PHPUnit\TextUI\Configuration\Configuration::source()->notEmpty()`             |
-|       | `PHPUnit\TextUI\Configuration\Configuration::restrictDeprecations()`                                                         | 10.2.0 | `PHPUnit\TextUI\Configuration\Configuration::source()->restrictDeprecations()` |
-|       | `PHPUnit\TextUI\Configuration\Configuration::restrictNotices()`                                                              | 10.2.0 | `PHPUnit\TextUI\Configuration\Configuration::source()->restrictNotices()`      |
-|       | `PHPUnit\TextUI\Configuration\Configuration::restrictWarnings()`                                                             | 10.2.0 | `PHPUnit\TextUI\Configuration\Configuration::source()->restrictWarnings()`     |
-|       | `PHPUnit\TextUI\Configuration\Configuration::cliArgument()`                                                                  | 10.4.0 | `PHPUnit\TextUI\Configuration\Configuration::cliArguments()[0]`                |
-|       | `PHPUnit\TextUI\Configuration\Configuration::hasCliArgument()`                                                               | 10.4.0 | `PHPUnit\TextUI\Configuration\Configuration::hasCliArguments()`                |
-|       | `PHPUnit\Framework\Constraint\Constraint::exporter()`                                                                        | 10.4.0 |                                                                                |
-|       | `PHPUnit\TextUI\Configuration\Configuration::registerMockObjectsFromTestArgumentsRecursively()`                              | 10.5.3 |                                                                                |
-|       | `Test\AssertionFailed` and `Test\AssertionSucceeded` events                                                                  | 10.5.3 |                                                                                |
-|       | `PHPUnit\Runner\Extension\Facade::requireExportOfObjects()` and `PHPUnit\Runner\Extension\Facade::requiresExportOfObjects()` | 10.5.3 |                                                                                |
+| Issue                                                             | Description                                       | Since  | Replacement                                                             |
+|-------------------------------------------------------------------|---------------------------------------------------|--------|-------------------------------------------------------------------------|
+| [#6537](https://github.com/sebastianbergmann/phpunit/issues/6537) | `id()` and `after()` for mock object expectations | 13.1.0 |                                                                         |
+| [#6560](https://github.com/sebastianbergmann/phpunit/issues/6560) | `expectExceptionMessage()`                        | 13.2.0 | `expectExceptionMessageIsOrContains()`                                  |
+| [#6686](https://github.com/sebastianbergmann/phpunit/issues/6686) | `Constraint::failureDescriptionInContext()`       | 13.4.0 | Override `Constraint::negatedFailureDescription()` in your constraint   |
+| [#6686](https://github.com/sebastianbergmann/phpunit/issues/6686) | `LogicalNot::negate()`                            | 13.4.0 | Override `Constraint::negatedToString()` in your constraint             |
 
 ## Hard Deprecations
 
@@ -84,9 +21,35 @@ This functionality is currently [hard-deprecated](https://phpunit.de/backward-co
 
 ### Writing Tests
 
-#### Miscellaneous
+#### Assertions, Constraints, and Expectations
 
-| Issue                                                             | Description                                                                                                                                               | Since   | Replacement |
-|-------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|---------|-------------|
-| [#5100](https://github.com/sebastianbergmann/phpunit/issues/5100) | Support for non-static data provider methods, non-public data provider methods, and data provider methods that declare parameters                         | 10.0.0  |             |
-| [#5812](https://github.com/sebastianbergmann/phpunit/pull/5812)   | Support for string array keys in data sets returned by data provider methods that do not match the parameter names of the test method(s) that use(s) them | 10.5.18 |             |
+| Issue                                                             | Description                                               | Since  | Replacement                                                                                                          |
+|-------------------------------------------------------------------|-----------------------------------------------------------|--------|----------------------------------------------------------------------------------------------------------------------|
+| [#6461](https://github.com/sebastianbergmann/phpunit/issues/6461) | `TestCase::any()`                                         | 12.5.5 | Use a test stub instead or configure a real invocation count expectation                                             |
+| [#6505](https://github.com/sebastianbergmann/phpunit/issues/6505) | Calling `atLeast()` with an argument that is not positive | 13.0.2 | Use a positive argument instead                                                                                      |
+| [#6507](https://github.com/sebastianbergmann/phpunit/issues/6507) | Support for using `with*()` without `expects()`           | 13.0.2 | Either configure an expected invocation count using `expects()`or use a test stub without the `with*()` call instead |
+
+### Running Tests
+
+| Issue                                                             | Description                                                   | Since  | Replacement                                                     |
+|-------------------------------------------------------------------|---------------------------------------------------------------|--------|-----------------------------------------------------------------|
+| [#6075](https://github.com/sebastianbergmann/phpunit/issues/6075) | `--order-by duration` CLI option                              | 13.2.0 | Use `--order-by duration-ascending` instead                     |
+| [#6075](https://github.com/sebastianbergmann/phpunit/issues/6075) | `--order-by size` CLI option                                  | 13.2.0 | Use `--order-by size-ascending` instead                         |
+| [#6075](https://github.com/sebastianbergmann/phpunit/issues/6075) | `executionOrder="duration"` XML configuration attribute value | 13.2.0 | Use `executionOrder="duration-ascending"` instead               |
+| [#6075](https://github.com/sebastianbergmann/phpunit/issues/6075) | `executionOrder="size"` XML configuration attribute value     | 13.2.0 | Use `executionOrder="size-ascending"` instead                   |
+| [#6515](https://github.com/sebastianbergmann/phpunit/issues/6515) | `--log-events-verbose-text <file>` CLI option                 | 13.1.0 | Use `--log-events-verbose-text <file> --with-telemetry` instead |
+| [#6585](https://github.com/sebastianbergmann/phpunit/issues/6585) | `depends` for `--order-by` or `executionOrder`                 | 13.4.0 | Use `--resolve-dependencies` or `resolveDependencies="true"` instead |
+| [#6585](https://github.com/sebastianbergmann/phpunit/issues/6585) | `no-depends` for `--order-by` or `executionOrder`              | 13.4.0 | Use `--ignore-dependencies` or `resolveDependencies="false"` instead |
+| [#6585](https://github.com/sebastianbergmann/phpunit/issues/6585) | `defects` written before the order                            | 13.4.0 | Write the order first, for example `duration-ascending,defects` |
+| [#6585](https://github.com/sebastianbergmann/phpunit/issues/6585) | More than one order for `--order-by` or `executionOrder`       | 13.4.0 | Configure exactly one order                                     |
+| [#6585](https://github.com/sebastianbergmann/phpunit/issues/6585) | Unknown value for the `executionOrder` XML attribute           | 13.4.0 | Use a value the schema allows                                   |
+|                                                                   | `--cache-result` CLI option                                   | 13.3.0 | Use `--record-test-run-history` instead                         |
+|                                                                   | `--do-not-cache-result` CLI option                            | 13.3.0 | Use `--do-not-record-test-run-history` instead                  |
+|                                                                   | `cacheResult` XML configuration attribute                     | 13.3.0 | Use `recordTestRunHistory` instead                              |
+
+### Extending PHPUnit
+
+| Issue                                                             | Description                                                   | Since  | Replacement                                                     |
+|-------------------------------------------------------------------|---------------------------------------------------------------|--------|-----------------------------------------------------------------|
+|                                                                   | `TextUI\Configuration\Configuration::cacheResult()`           | 13.3.0 | Use `recordTestRunHistory()` instead                            |
+|                                                                   | `TextUI\Configuration\Configuration::testResultCacheFile()`   | 13.3.0 | Use `testRunHistoryFile()` instead                              |

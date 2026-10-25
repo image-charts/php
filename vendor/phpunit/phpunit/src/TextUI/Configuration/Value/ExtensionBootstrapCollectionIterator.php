@@ -9,32 +9,29 @@
  */
 namespace PHPUnit\TextUI\Configuration;
 
-use function count;
-use function iterator_count;
-use Countable;
+use function assert;
 use Iterator;
 
 /**
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  *
- * @template-implements Iterator<int, ExtensionBootstrap>
+ * @template-implements Iterator<non-negative-int, ExtensionBootstrap>
  */
-final class ExtensionBootstrapCollectionIterator implements Countable, Iterator
+final class ExtensionBootstrapCollectionIterator implements Iterator
 {
     /**
-     * @psalm-var list<ExtensionBootstrap>
+     * @var list<ExtensionBootstrap>
      */
     private readonly array $extensionBootstraps;
+
+    /**
+     * @var non-negative-int
+     */
     private int $position = 0;
 
     public function __construct(ExtensionBootstrapCollection $extensionBootstraps)
     {
         $this->extensionBootstraps = $extensionBootstraps->asArray();
-    }
-
-    public function count(): int
-    {
-        return iterator_count($this);
     }
 
     public function rewind(): void
@@ -44,9 +41,12 @@ final class ExtensionBootstrapCollectionIterator implements Countable, Iterator
 
     public function valid(): bool
     {
-        return $this->position < count($this->extensionBootstraps);
+        return isset($this->extensionBootstraps[$this->position]);
     }
 
+    /**
+     * @return non-negative-int
+     */
     public function key(): int
     {
         return $this->position;
@@ -54,6 +54,8 @@ final class ExtensionBootstrapCollectionIterator implements Countable, Iterator
 
     public function current(): ExtensionBootstrap
     {
+        assert(isset($this->extensionBootstraps[$this->position]));
+
         return $this->extensionBootstraps[$this->position];
     }
 

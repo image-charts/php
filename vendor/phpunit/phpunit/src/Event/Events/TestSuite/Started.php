@@ -14,15 +14,18 @@ use PHPUnit\Event\Event;
 use PHPUnit\Event\Telemetry;
 
 /**
- * @psalm-immutable
+ * @immutable
  *
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  */
-final class Started implements Event
+final readonly class Started implements Event
 {
-    private readonly Telemetry\Info $telemetryInfo;
-    private readonly TestSuite $testSuite;
+    private Telemetry\Info $telemetryInfo;
+    private TestSuite $testSuite;
 
+    /**
+     * @internal This method is not covered by the backward compatibility promise for PHPUnit
+     */
     public function __construct(Telemetry\Info $telemetryInfo, TestSuite $testSuite)
     {
         $this->telemetryInfo = $telemetryInfo;
@@ -39,13 +42,55 @@ final class Started implements Event
         return $this->testSuite;
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function asString(): string
     {
+        if ($this->testSuite->isForRetriedTestMethod()) {
+            return sprintf(
+                'Test Suite for Retried Test Method Started (%s, up to %d attempts)',
+                $this->testSuite->name(),
+                $this->testSuite->maxAttempts(),
+            );
+        }
+
+        if ($this->testSuite->isForRetriedPhpt()) {
+            return sprintf(
+                'Test Suite for Retried PHPT Started (%s, up to %d attempts)',
+                $this->testSuite->name(),
+                $this->testSuite->maxAttempts(),
+            );
+        }
+
+        $prefix = 'Test Suite Started';
+        $unit   = 'test';
+
+        if ($this->testSuite->isForTestMethodWithDataProvider()) {
+            $prefix = 'Test Suite for Test Method with Data Provider Started';
+            $unit   = 'data set';
+        } elseif ($this->testSuite->isForRepeatedTestMethod()) {
+            $prefix = 'Test Suite for Repeated Test Method Started';
+            $unit   = 'repetition';
+        } elseif ($this->testSuite->isForRepeatedPhpt()) {
+            $prefix = 'Test Suite for Repeated PHPT Started';
+            $unit   = 'repetition';
+        }
+
+        $count  = $this->testSuite->count();
+        $plural = '';
+
+        if ($count !== 1) {
+            $plural = 's';
+        }
+
         return sprintf(
-            'Test Suite Started (%s, %d test%s)',
+            '%s (%s, %d %s%s)',
+            $prefix,
             $this->testSuite->name(),
-            $this->testSuite->count(),
-            $this->testSuite->count() !== 1 ? 's' : '',
+            $count,
+            $unit,
+            $plural,
         );
     }
 }

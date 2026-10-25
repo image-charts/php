@@ -12,11 +12,16 @@ namespace PHPUnit\Framework;
 use function array_filter;
 use function array_map;
 use function array_values;
+use function assert;
+use function class_exists;
+use function count;
 use function explode;
 use function in_array;
 use function str_contains;
 use PHPUnit\Metadata\DependsOnClass;
 use PHPUnit\Metadata\DependsOnMethod;
+use PHPUnit\Util\Test as TestUtil;
+use ReflectionClass;
 use Stringable;
 
 /**
@@ -62,9 +67,9 @@ final class ExecutionOrderDependency implements Stringable
     }
 
     /**
-     * @psalm-param list<ExecutionOrderDependency> $dependencies
+     * @param list<ExecutionOrderDependency> $dependencies
      *
-     * @psalm-return list<ExecutionOrderDependency>
+     * @return list<ExecutionOrderDependency>
      */
     public static function filterInvalid(array $dependencies): array
     {
@@ -77,15 +82,15 @@ final class ExecutionOrderDependency implements Stringable
     }
 
     /**
-     * @psalm-param list<ExecutionOrderDependency> $existing
-     * @psalm-param list<ExecutionOrderDependency> $additional
+     * @param list<ExecutionOrderDependency> $existing
+     * @param list<ExecutionOrderDependency> $additional
      *
-     * @psalm-return list<ExecutionOrderDependency>
+     * @return list<ExecutionOrderDependency>
      */
     public static function mergeUnique(array $existing, array $additional): array
     {
         $existingTargets = array_map(
-            static fn ($dependency) => $dependency->getTarget(),
+            static fn (ExecutionOrderDependency $dependency) => $dependency->getTarget(),
             $existing,
         );
 
@@ -104,10 +109,10 @@ final class ExecutionOrderDependency implements Stringable
     }
 
     /**
-     * @psalm-param list<ExecutionOrderDependency> $left
-     * @psalm-param list<ExecutionOrderDependency> $right
+     * @param list<ExecutionOrderDependency> $left
+     * @param list<ExecutionOrderDependency> $right
      *
-     * @psalm-return list<ExecutionOrderDependency>
+     * @return list<ExecutionOrderDependency>
      */
     public static function diff(array $left, array $right): array
     {
@@ -121,7 +126,7 @@ final class ExecutionOrderDependency implements Stringable
 
         $diff         = [];
         $rightTargets = array_map(
-            static fn ($dependency) => $dependency->getTarget(),
+            static fn (ExecutionOrderDependency $dependency) => $dependency->getTarget(),
             $right,
         );
 
@@ -146,10 +151,11 @@ final class ExecutionOrderDependency implements Stringable
         }
 
         if (str_contains($classOrCallableName, '::')) {
+            assert(count(explode('::', $classOrCallableName)) === 2);
             [$this->className, $this->methodName] = explode('::', $classOrCallableName);
         } else {
             $this->className  = $classOrCallableName;
-            $this->methodName = !empty($methodName) ? $methodName : 'class';
+            $this->methodName = $methodName !== null && $methodName !== '' ? $methodName : 'class';
         }
     }
 
@@ -158,6 +164,9 @@ final class ExecutionOrderDependency implements Stringable
         return $this->getTarget();
     }
 
+    /**
+     * @phpstan-assert-if-true non-empty-string $this->getTarget()
+     */
     public function isValid(): bool
     {
         // Invalid dependencies can be declared and are skipped by the runner
@@ -181,13 +190,40 @@ final class ExecutionOrderDependency implements Stringable
 
     public function getTarget(): string
     {
-        return $this->isValid()
-            ? $this->className . '::' . $this->methodName
-            : '';
+        if ($this->isValid()) {
+            return $this->className . '::' . $this->methodName;
+        }
+
+        return '';
     }
 
     public function getTargetClassName(): string
     {
         return $this->className;
+    }
+
+    public function targetIsCallableTestMethod(): bool
+    {
+        if (!$this->isValid()) {
+            return false;
+        }
+
+        if (!class_exists($this->className)) {
+            return false;
+        }
+
+        $class = new ReflectionClass($this->className);
+
+        if (!$class->isSubclassOf(TestCase::class)) {
+            return false;
+        }
+
+        if (!$class->hasMethod($this->methodName)) {
+            return false;
+        }
+
+        return TestUtil::isTestMethod(
+            $class->getMethod($this->methodName),
+        );
     }
 }

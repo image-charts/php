@@ -9,14 +9,12 @@
  */
 namespace PHPUnit\TextUI\XmlConfiguration\CodeCoverage;
 
-use function count;
-use PHPUnit\TextUI\Configuration\Directory;
-use PHPUnit\TextUI\Configuration\FileCollection;
-use PHPUnit\TextUI\Configuration\FilterDirectoryCollection;
 use PHPUnit\TextUI\XmlConfiguration\CodeCoverage\Report\Clover;
 use PHPUnit\TextUI\XmlConfiguration\CodeCoverage\Report\Cobertura;
 use PHPUnit\TextUI\XmlConfiguration\CodeCoverage\Report\Crap4j;
 use PHPUnit\TextUI\XmlConfiguration\CodeCoverage\Report\Html;
+use PHPUnit\TextUI\XmlConfiguration\CodeCoverage\Report\Jsonl;
+use PHPUnit\TextUI\XmlConfiguration\CodeCoverage\Report\OpenClover;
 use PHPUnit\TextUI\XmlConfiguration\CodeCoverage\Report\Php;
 use PHPUnit\TextUI\XmlConfiguration\CodeCoverage\Report\Text;
 use PHPUnit\TextUI\XmlConfiguration\CodeCoverage\Report\Xml;
@@ -27,35 +25,31 @@ use PHPUnit\TextUI\XmlConfiguration\Exception;
  *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  *
- * @psalm-immutable
+ * @immutable
  */
-final class CodeCoverage
+final readonly class CodeCoverage
 {
-    private readonly ?Directory $cacheDirectory;
-    private readonly FilterDirectoryCollection $directories;
-    private readonly FileCollection $files;
-    private readonly FilterDirectoryCollection $excludeDirectories;
-    private readonly FileCollection $excludeFiles;
-    private readonly bool $pathCoverage;
-    private readonly bool $includeUncoveredFiles;
-    private readonly bool $ignoreDeprecatedCodeUnits;
-    private readonly bool $disableCodeCoverageIgnore;
-    private readonly ?Clover $clover;
-    private readonly ?Cobertura $cobertura;
-    private readonly ?Crap4j $crap4j;
-    private readonly ?Html $html;
-    private readonly ?Php $php;
-    private readonly ?Text $text;
-    private readonly ?Xml $xml;
+    private ?string $driver;
+    private bool $pathCoverage;
+    private bool $branchCoverage;
+    private bool $includeUncoveredFiles;
+    private bool $ignoreDeprecatedCodeUnits;
+    private bool $disableCodeCoverageIgnore;
+    private ?Clover $clover;
+    private ?Cobertura $cobertura;
+    private ?Crap4j $crap4j;
+    private ?Html $html;
+    private ?Jsonl $jsonl;
+    private ?OpenClover $openClover;
+    private ?Php $php;
+    private ?Text $text;
+    private ?Xml $xml;
 
-    public function __construct(?Directory $cacheDirectory, FilterDirectoryCollection $directories, FileCollection $files, FilterDirectoryCollection $excludeDirectories, FileCollection $excludeFiles, bool $pathCoverage, bool $includeUncoveredFiles, bool $ignoreDeprecatedCodeUnits, bool $disableCodeCoverageIgnore, ?Clover $clover, ?Cobertura $cobertura, ?Crap4j $crap4j, ?Html $html, ?Php $php, ?Text $text, ?Xml $xml)
+    public function __construct(?string $driver, bool $pathCoverage, bool $branchCoverage, bool $includeUncoveredFiles, bool $ignoreDeprecatedCodeUnits, bool $disableCodeCoverageIgnore, ?Clover $clover, ?Cobertura $cobertura, ?Crap4j $crap4j, ?Html $html, ?Jsonl $jsonl, ?OpenClover $openClover, ?Php $php, ?Text $text, ?Xml $xml)
     {
-        $this->cacheDirectory            = $cacheDirectory;
-        $this->directories               = $directories;
-        $this->files                     = $files;
-        $this->excludeDirectories        = $excludeDirectories;
-        $this->excludeFiles              = $excludeFiles;
+        $this->driver                    = $driver;
         $this->pathCoverage              = $pathCoverage;
+        $this->branchCoverage            = $branchCoverage;
         $this->includeUncoveredFiles     = $includeUncoveredFiles;
         $this->ignoreDeprecatedCodeUnits = $ignoreDeprecatedCodeUnits;
         $this->disableCodeCoverageIgnore = $disableCodeCoverageIgnore;
@@ -63,65 +57,43 @@ final class CodeCoverage
         $this->cobertura                 = $cobertura;
         $this->crap4j                    = $crap4j;
         $this->html                      = $html;
+        $this->jsonl                     = $jsonl;
+        $this->openClover                = $openClover;
         $this->php                       = $php;
         $this->text                      = $text;
         $this->xml                       = $xml;
     }
 
     /**
-     * @psalm-assert-if-true !null $this->cacheDirectory
-     *
-     * @deprecated
+     * @phpstan-assert-if-true !null $this->driver
      */
-    public function hasCacheDirectory(): bool
+    public function hasDriver(): bool
     {
-        return $this->cacheDirectory !== null;
+        return $this->driver !== null;
     }
 
     /**
      * @throws Exception
-     *
-     * @deprecated
      */
-    public function cacheDirectory(): Directory
+    public function driver(): string
     {
-        if (!$this->hasCacheDirectory()) {
+        if (!$this->hasDriver()) {
             throw new Exception(
-                'No cache directory has been configured',
+                'Code Coverage driver has not been configured',
             );
         }
 
-        return $this->cacheDirectory;
-    }
-
-    public function hasNonEmptyListOfFilesToBeIncludedInCodeCoverageReport(): bool
-    {
-        return count($this->directories) > 0 || count($this->files) > 0;
-    }
-
-    public function directories(): FilterDirectoryCollection
-    {
-        return $this->directories;
-    }
-
-    public function files(): FileCollection
-    {
-        return $this->files;
-    }
-
-    public function excludeDirectories(): FilterDirectoryCollection
-    {
-        return $this->excludeDirectories;
-    }
-
-    public function excludeFiles(): FileCollection
-    {
-        return $this->excludeFiles;
+        return $this->driver;
     }
 
     public function pathCoverage(): bool
     {
         return $this->pathCoverage;
+    }
+
+    public function branchCoverage(): bool
+    {
+        return $this->branchCoverage;
     }
 
     public function includeUncoveredFiles(): bool
@@ -140,7 +112,7 @@ final class CodeCoverage
     }
 
     /**
-     * @psalm-assert-if-true !null $this->clover
+     * @phpstan-assert-if-true !null $this->clover
      */
     public function hasClover(): bool
     {
@@ -162,7 +134,7 @@ final class CodeCoverage
     }
 
     /**
-     * @psalm-assert-if-true !null $this->cobertura
+     * @phpstan-assert-if-true !null $this->cobertura
      */
     public function hasCobertura(): bool
     {
@@ -184,7 +156,7 @@ final class CodeCoverage
     }
 
     /**
-     * @psalm-assert-if-true !null $this->crap4j
+     * @phpstan-assert-if-true !null $this->crap4j
      */
     public function hasCrap4j(): bool
     {
@@ -206,7 +178,7 @@ final class CodeCoverage
     }
 
     /**
-     * @psalm-assert-if-true !null $this->html
+     * @phpstan-assert-if-true !null $this->html
      */
     public function hasHtml(): bool
     {
@@ -228,7 +200,51 @@ final class CodeCoverage
     }
 
     /**
-     * @psalm-assert-if-true !null $this->php
+     * @phpstan-assert-if-true !null $this->jsonl
+     */
+    public function hasJsonl(): bool
+    {
+        return $this->jsonl !== null;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function jsonl(): Jsonl
+    {
+        if (!$this->hasJsonl()) {
+            throw new Exception(
+                'Code Coverage report "JSONL" has not been configured',
+            );
+        }
+
+        return $this->jsonl;
+    }
+
+    /**
+     * @phpstan-assert-if-true !null $this->openClover
+     */
+    public function hasOpenClover(): bool
+    {
+        return $this->openClover !== null;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function openClover(): OpenClover
+    {
+        if (!$this->hasOpenClover()) {
+            throw new Exception(
+                'Code Coverage report "OpenClover XML" has not been configured',
+            );
+        }
+
+        return $this->openClover;
+    }
+
+    /**
+     * @phpstan-assert-if-true !null $this->php
      */
     public function hasPhp(): bool
     {
@@ -250,7 +266,7 @@ final class CodeCoverage
     }
 
     /**
-     * @psalm-assert-if-true !null $this->text
+     * @phpstan-assert-if-true !null $this->text
      */
     public function hasText(): bool
     {
@@ -272,7 +288,7 @@ final class CodeCoverage
     }
 
     /**
-     * @psalm-assert-if-true !null $this->xml
+     * @phpstan-assert-if-true !null $this->xml
      */
     public function hasXml(): bool
     {

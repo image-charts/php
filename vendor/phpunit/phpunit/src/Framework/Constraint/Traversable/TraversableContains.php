@@ -28,9 +28,17 @@ abstract class TraversableContains extends Constraint
     /**
      * Returns a string representation of the constraint.
      */
-    public function toString(bool $exportObjects = false): string
+    public function toString(): string
     {
-        return 'contains ' . Exporter::export($this->value, $exportObjects);
+        return 'contains ' . Exporter::export($this->value);
+    }
+
+    /**
+     * Returns the negated string representation of the constraint.
+     */
+    protected function negatedToString(): string
+    {
+        return 'does not contain ' . Exporter::export($this->value);
     }
 
     /**
@@ -44,7 +52,16 @@ abstract class TraversableContains extends Constraint
         return sprintf(
             '%s %s',
             is_array($other) ? 'an array' : 'a traversable',
-            $this->toString(true),
+            $this->toString(),
+        );
+    }
+
+    protected function negatedFailureDescription(mixed $other): string
+    {
+        return sprintf(
+            '%s %s',
+            is_array($other) ? 'an array' : 'a traversable',
+            $this->negatedToString(),
         );
     }
 

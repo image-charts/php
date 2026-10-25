@@ -16,7 +16,6 @@ use function trim;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Util\Exporter;
 use SebastianBergmann\Comparator\ComparisonFailure;
-use SebastianBergmann\Comparator\Factory as ComparatorFactory;
 
 /**
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
@@ -42,7 +41,7 @@ final class IsEqualCanonicalizing extends Constraint
      *
      * @throws ExpectationFailedException
      */
-    public function evaluate(mixed $other, string $description = '', bool $returnResult = false): ?bool
+    public function evaluate(mixed $other, string $description = '', bool $returnResult = false): bool
     {
         // If $this->value and $other are identical, they are also equal.
         // This is the most common path and will allow us to skip
@@ -51,20 +50,8 @@ final class IsEqualCanonicalizing extends Constraint
             return true;
         }
 
-        $comparatorFactory = ComparatorFactory::getInstance();
-
         try {
-            $comparator = $comparatorFactory->getComparatorFor(
-                $this->value,
-                $other,
-            );
-
-            $comparator->assertEquals(
-                $this->value,
-                $other,
-                0.0,
-                true,
-            );
+            $this->assertEqualsUsingComparator($this->value, $other, 0.0, true);
         } catch (ComparisonFailure $f) {
             if ($returnResult) {
                 return false;
@@ -82,22 +69,32 @@ final class IsEqualCanonicalizing extends Constraint
     /**
      * Returns a string representation of the constraint.
      */
-    public function toString(bool $exportObjects = false): string
+    public function toString(): string
+    {
+        return 'is equal to ' . $this->valueAsString();
+    }
+
+    /**
+     * Returns the negated string representation of the constraint.
+     *
+     * Authoring the negation here keeps the exported value out of the
+     * negation entirely.
+     */
+    protected function negatedToString(): string
+    {
+        return 'is not equal to ' . $this->valueAsString();
+    }
+
+    private function valueAsString(): string
     {
         if (is_string($this->value)) {
             if (str_contains($this->value, "\n")) {
-                return 'is equal to <text>';
+                return '<text>';
             }
 
-            return sprintf(
-                "is equal to '%s'",
-                $this->value,
-            );
+            return sprintf("'%s'", $this->value);
         }
 
-        return sprintf(
-            'is equal to %s',
-            Exporter::export($this->value, $exportObjects),
-        );
+        return Exporter::export($this->value);
     }
 }

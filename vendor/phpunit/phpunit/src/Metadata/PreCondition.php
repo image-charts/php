@@ -10,17 +10,28 @@
 namespace PHPUnit\Metadata;
 
 /**
- * @psalm-immutable
+ * @immutable
  *
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  */
-final class PreCondition extends Metadata
+final readonly class PreCondition extends Metadata
 {
-    /**
-     * @psalm-assert-if-true PreCondition $this
-     */
-    public function isPreCondition(): bool
+    private int $priority;
+
+    protected function __construct(Level $level, int $priority)
+    {
+        parent::__construct($level);
+
+        $this->priority = $priority;
+    }
+
+    public function isPreCondition(): true
     {
         return true;
+    }
+
+    public function priority(): int
+    {
+        return $this->priority;
     }
 }

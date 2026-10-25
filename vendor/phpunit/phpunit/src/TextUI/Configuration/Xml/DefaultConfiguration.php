@@ -13,8 +13,8 @@ use PHPUnit\Runner\TestSuiteSorter;
 use PHPUnit\TextUI\Configuration\ConstantCollection;
 use PHPUnit\TextUI\Configuration\DirectoryCollection;
 use PHPUnit\TextUI\Configuration\ExtensionBootstrapCollection;
-use PHPUnit\TextUI\Configuration\FileCollection;
-use PHPUnit\TextUI\Configuration\FilterDirectoryCollection as CodeCoverageFilterDirectoryCollection;
+use PHPUnit\TextUI\Configuration\FilterDirectoryCollection;
+use PHPUnit\TextUI\Configuration\FilterFileCollection;
 use PHPUnit\TextUI\Configuration\GroupCollection;
 use PHPUnit\TextUI\Configuration\IniSettingCollection;
 use PHPUnit\TextUI\Configuration\Php;
@@ -29,9 +29,9 @@ use PHPUnit\TextUI\XmlConfiguration\Logging\Logging;
  *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  *
- * @psalm-immutable
+ * @immutable
  */
-final class DefaultConfiguration extends Configuration
+final readonly class DefaultConfiguration extends Configuration
 {
     public static function create(): self
     {
@@ -40,10 +40,10 @@ final class DefaultConfiguration extends Configuration
             new Source(
                 null,
                 false,
-                CodeCoverageFilterDirectoryCollection::fromArray([]),
-                FileCollection::fromArray([]),
-                CodeCoverageFilterDirectoryCollection::fromArray([]),
-                FileCollection::fromArray([]),
+                FilterDirectoryCollection::fromArray([]),
+                FilterFileCollection::fromArray([]),
+                FilterDirectoryCollection::fromArray([]),
+                FilterFileCollection::fromArray([]),
                 false,
                 false,
                 false,
@@ -53,18 +53,25 @@ final class DefaultConfiguration extends Configuration
                 false,
                 false,
                 false,
+                [
+                    'functions'               => [],
+                    'methods'                 => [],
+                    'ignoreUndefinedTriggers' => false,
+                ],
                 false,
+                false,
+                false,
+                true,
             ),
             new CodeCoverage(
                 null,
-                CodeCoverageFilterDirectoryCollection::fromArray([]),
-                FileCollection::fromArray([]),
-                CodeCoverageFilterDirectoryCollection::fromArray([]),
-                FileCollection::fromArray([]),
+                false,
                 false,
                 true,
                 false,
                 false,
+                null,
+                null,
                 null,
                 null,
                 null,
@@ -78,6 +85,7 @@ final class DefaultConfiguration extends Configuration
                 GroupCollection::fromArray([]),
             ),
             new Logging(
+                null,
                 null,
                 null,
                 null,
@@ -99,7 +107,6 @@ final class DefaultConfiguration extends Configuration
             new PHPUnit(
                 null,
                 true,
-                null,
                 80,
                 \PHPUnit\TextUI\Configuration\Configuration::COLOR_DEFAULT,
                 false,
@@ -113,7 +120,23 @@ final class DefaultConfiguration extends Configuration
                 false,
                 false,
                 false,
+                false,
+                false,
+                false,
+                false,
+                false,
                 null,
+                [],
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
                 false,
                 false,
                 false,
@@ -132,12 +155,20 @@ final class DefaultConfiguration extends Configuration
                 false,
                 false,
                 false,
-                false,
-                false,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
                 null,
                 false,
                 false,
                 true,
+                false,
                 false,
                 false,
                 1,
@@ -154,6 +185,10 @@ final class DefaultConfiguration extends Configuration
                 false,
                 false,
                 100,
+                10,
+                3,
+                false,
+                false,
             ),
             TestSuiteCollection::fromArray([]),
         );

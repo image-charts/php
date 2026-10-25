@@ -9,15 +9,18 @@
  */
 namespace PHPUnit\Framework\MockObject;
 
-use PHPUnit\Framework\MockObject\Builder\InvocationMocker;
 use PHPUnit\Framework\MockObject\Rule\InvocationOrder;
 
 /**
- * @method InvocationMocker method($constraint)
- *
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  */
 interface MockObject extends Stub
 {
     public function expects(InvocationOrder $invocationRule): InvocationMocker;
+
+    /**
+     * @param ?non-empty-string                         $label
+     * @param array<non-empty-string, non-empty-string> $methodLabels
+     */
+    public function recordInvocationsIn(InvocationJournal $journal, ?string $label = null, array $methodLabels = []): void;
 }

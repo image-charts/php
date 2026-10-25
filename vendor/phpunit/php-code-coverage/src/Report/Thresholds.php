@@ -12,12 +12,14 @@ namespace SebastianBergmann\CodeCoverage\Report;
 use SebastianBergmann\CodeCoverage\InvalidArgumentException;
 
 /**
- * @psalm-immutable
+ * @immutable
+ *
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for phpunit/php-code-coverage
  */
-final class Thresholds
+final readonly class Thresholds
 {
-    private readonly int $lowUpperBound;
-    private readonly int $highLowerBound;
+    private int $lowUpperBound;
+    private int $highLowerBound;
 
     public static function default(): self
     {

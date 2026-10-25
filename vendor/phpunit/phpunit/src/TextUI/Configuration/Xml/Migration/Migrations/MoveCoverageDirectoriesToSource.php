@@ -12,6 +12,8 @@ namespace PHPUnit\TextUI\XmlConfiguration;
 use function assert;
 use DOMDocument;
 use DOMElement;
+use DOMNode;
+use DOMNodeList;
 use DOMXPath;
 
 /**
@@ -19,7 +21,7 @@ use DOMXPath;
  *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
-final class MoveCoverageDirectoriesToSource implements Migration
+final readonly class MoveCoverageDirectoriesToSource implements Migration
 {
     /**
      * @throws MigrationException
@@ -28,9 +30,11 @@ final class MoveCoverageDirectoriesToSource implements Migration
     {
         $source = $document->getElementsByTagName('source')->item(0);
 
+        // @codeCoverageIgnoreStart
         if ($source !== null) {
             return;
         }
+        // @codeCoverageIgnoreEnd
 
         $coverage = $document->getElementsByTagName('coverage')->item(0);
 
@@ -48,7 +52,12 @@ final class MoveCoverageDirectoriesToSource implements Migration
         $xpath = new DOMXPath($document);
 
         foreach (['include', 'exclude'] as $element) {
-            foreach (SnapshotNodeList::fromNodeList($xpath->query('//coverage/' . $element)) as $node) {
+            /** @var DOMNodeList<DOMNode>|false $nodes */
+            $nodes = $xpath->query('//coverage/' . $element);
+
+            assert($nodes !== false);
+
+            foreach (SnapshotNodeList::fromNodeList($nodes) as $node) {
                 $source->appendChild($node);
             }
         }

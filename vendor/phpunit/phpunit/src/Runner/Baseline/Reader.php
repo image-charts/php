@@ -27,10 +27,10 @@ use PHPUnit\Util\Xml\XmlException;
  *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
-final class Reader
+final readonly class Reader
 {
     /**
-     * @psalm-param non-empty-string $baselineFile
+     * @param non-empty-string $baselineFile
      *
      * @throws CannotLoadBaselineException
      */
@@ -50,13 +50,18 @@ final class Reader
         } catch (XmlException $e) {
             throw new CannotLoadBaselineException(
                 sprintf(
-                    'Cannot read baseline: %s',
+                    'Cannot read baseline %s: %s',
+                    $baselineFile,
                     trim($e->getMessage()),
                 ),
             );
         }
 
-        $version = (int) $document->documentElement->getAttribute('version');
+        $documentElement = $document->documentElement;
+
+        assert($documentElement !== null);
+
+        $version = (int) $documentElement->getAttribute('version');
 
         if ($version !== Baseline::VERSION) {
             throw new CannotLoadBaselineException(
@@ -68,31 +73,55 @@ final class Reader
             );
         }
 
-        $baseline          = new Baseline;
-        $baselineDirectory = dirname(realpath($baselineFile));
+        $baseline             = new Baseline;
+        $resolvedBaselineFile = realpath($baselineFile);
+
+        assert($resolvedBaselineFile !== false);
+
+        $baselineDirectory = dirname($resolvedBaselineFile);
         $xpath             = new DOMXPath($document);
 
-        foreach ($xpath->query('file') as $fileElement) {
-            assert($fileElement instanceof DOMElement);
+        $fileElements = $xpath->query('file');
 
-            $file = $baselineDirectory . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $fileElement->getAttribute('path'));
+        if ($fileElements !== false) {
+            foreach ($fileElements as $fileElement) {
+                assert($fileElement instanceof DOMElement);
 
-            foreach ($xpath->query('line', $fileElement) as $lineElement) {
-                assert($lineElement instanceof DOMElement);
+                $file = $baselineDirectory . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $fileElement->getAttribute('path'));
 
-                $line = (int) $lineElement->getAttribute('number');
-                $hash = $lineElement->getAttribute('hash');
+                $lineElements = $xpath->query('line', $fileElement);
 
-                foreach ($xpath->query('issue', $lineElement) as $issueElement) {
-                    assert($issueElement instanceof DOMElement);
+                if ($lineElements === false) {
+                    // @codeCoverageIgnoreStart
+                    continue;
+                    // @codeCoverageIgnoreEnd
+                }
 
-                    $description = $issueElement->textContent;
+                foreach ($lineElements as $lineElement) {
+                    assert($lineElement instanceof DOMElement);
 
-                    assert($line > 0);
-                    assert(!empty($hash));
-                    assert(!empty($description));
+                    $line = (int) $lineElement->getAttribute('number');
+                    $hash = $lineElement->getAttribute('hash');
 
-                    $baseline->add(Issue::from($file, $line, $hash, $description));
+                    $issueElements = $xpath->query('issue', $lineElement);
+
+                    if ($issueElements === false) {
+                        // @codeCoverageIgnoreStart
+                        continue;
+                        // @codeCoverageIgnoreEnd
+                    }
+
+                    foreach ($issueElements as $issueElement) {
+                        assert($issueElement instanceof DOMElement);
+
+                        $description = $issueElement->textContent;
+
+                        assert($line > 0);
+                        assert($hash !== '');
+                        assert($description !== '');
+
+                        $baseline->add(Issue::from($file, $line, $hash, $description));
+                    }
                 }
             }
         }

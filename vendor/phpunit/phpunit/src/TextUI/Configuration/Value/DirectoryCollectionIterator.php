@@ -9,32 +9,29 @@
  */
 namespace PHPUnit\TextUI\Configuration;
 
-use function count;
-use function iterator_count;
-use Countable;
+use function assert;
 use Iterator;
 
 /**
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  *
- * @template-implements Iterator<int, Directory>
+ * @template-implements Iterator<non-negative-int, Directory>
  */
-final class DirectoryCollectionIterator implements Countable, Iterator
+final class DirectoryCollectionIterator implements Iterator
 {
     /**
-     * @psalm-var list<Directory>
+     * @var list<Directory>
      */
     private readonly array $directories;
+
+    /**
+     * @var non-negative-int
+     */
     private int $position = 0;
 
     public function __construct(DirectoryCollection $directories)
     {
         $this->directories = $directories->asArray();
-    }
-
-    public function count(): int
-    {
-        return iterator_count($this);
     }
 
     public function rewind(): void
@@ -44,9 +41,12 @@ final class DirectoryCollectionIterator implements Countable, Iterator
 
     public function valid(): bool
     {
-        return $this->position < count($this->directories);
+        return isset($this->directories[$this->position]);
     }
 
+    /**
+     * @return non-negative-int
+     */
     public function key(): int
     {
         return $this->position;
@@ -54,6 +54,8 @@ final class DirectoryCollectionIterator implements Countable, Iterator
 
     public function current(): Directory
     {
+        assert(isset($this->directories[$this->position]));
+
         return $this->directories[$this->position];
     }
 

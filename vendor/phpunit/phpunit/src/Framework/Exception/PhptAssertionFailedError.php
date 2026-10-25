@@ -10,7 +10,7 @@
 namespace PHPUnit\Framework;
 
 /**
- * @psalm-immutable
+ * @immutable
  *
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  *
@@ -20,9 +20,16 @@ final class PhptAssertionFailedError extends AssertionFailedError
 {
     private readonly string $syntheticFile;
     private readonly int $syntheticLine;
+
+    /**
+     * @var list<array{file?: string, line?: int, function?: string, type?: string, ...}>
+     */
     private readonly array $syntheticTrace;
     private readonly string $diff;
 
+    /**
+     * @param list<array{file?: string, line?: int, function?: string, type?: string, ...}> $trace
+     */
     public function __construct(string $message, int $code, string $file, int $line, array $trace, string $diff)
     {
         parent::__construct($message, $code);
@@ -43,6 +50,9 @@ final class PhptAssertionFailedError extends AssertionFailedError
         return $this->syntheticLine;
     }
 
+    /**
+     * @return list<array{file?: string, line?: int, function?: string, type?: string, ...}>
+     */
     public function syntheticTrace(): array
     {
         return $this->syntheticTrace;

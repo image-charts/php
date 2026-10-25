@@ -14,14 +14,17 @@ use function sprintf;
 use PHPUnit\Event\InvalidArgumentException;
 
 /**
- * @psalm-immutable
+ * @immutable
  *
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  */
-final class Duration
+final readonly class Duration
 {
-    private readonly int $seconds;
-    private readonly int $nanoseconds;
+    /** @var non-negative-int */
+    private int $seconds;
+
+    /** @var non-negative-int */
+    private int $nanoseconds;
 
     /**
      * @throws InvalidArgumentException
@@ -62,6 +65,20 @@ final class Duration
         return $this->seconds() + ($this->nanoseconds() / 1000000000);
     }
 
+    public function add(self $other): self
+    {
+        $seconds     = $this->seconds + $other->seconds;
+        $nanoseconds = $this->nanoseconds + $other->nanoseconds;
+
+        if ($nanoseconds >= 1000000000) {
+            $seconds++;
+
+            $nanoseconds -= 1000000000;
+        }
+
+        return new self($seconds, $nanoseconds);
+    }
+
     public function asString(): string
     {
         $seconds = $this->seconds();
@@ -80,9 +97,9 @@ final class Duration
 
         return sprintf(
             '%02d:%02d:%02d.%09d',
-            $hours,
-            $minutes,
-            $seconds,
+            (int) $hours,
+            (int) $minutes,
+            (int) $seconds,
             $this->nanoseconds(),
         );
     }
@@ -120,6 +137,8 @@ final class Duration
     }
 
     /**
+     * @phpstan-assert non-negative-int $value
+     *
      * @throws InvalidArgumentException
      */
     private function ensureNotNegative(int $value, string $type): void

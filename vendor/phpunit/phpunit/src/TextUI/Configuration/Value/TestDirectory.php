@@ -14,33 +14,45 @@ use PHPUnit\Util\VersionComparisonOperator;
 /**
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  *
- * @psalm-immutable
+ * @immutable
  */
-final class TestDirectory
+final readonly class TestDirectory
 {
     /**
-     * @psalm-var non-empty-string
+     * @var non-empty-string
      */
-    private readonly string $path;
-    private readonly string $prefix;
-    private readonly string $suffix;
-    private readonly string $phpVersion;
-    private readonly VersionComparisonOperator $phpVersionOperator;
+    private string $path;
+    private string $prefix;
 
     /**
-     * @psalm-param non-empty-string $path
+     * @var non-empty-string
      */
-    public function __construct(string $path, string $prefix, string $suffix, string $phpVersion, VersionComparisonOperator $phpVersionOperator)
+    private string $suffix;
+    private string $phpVersion;
+    private VersionComparisonOperator $phpVersionOperator;
+
+    /**
+     * @var list<non-empty-string>
+     */
+    private array $groups;
+
+    /**
+     * @param non-empty-string       $path
+     * @param non-empty-string       $suffix
+     * @param list<non-empty-string> $groups
+     */
+    public function __construct(string $path, string $prefix, string $suffix, string $phpVersion, VersionComparisonOperator $phpVersionOperator, array $groups)
     {
         $this->path               = $path;
         $this->prefix             = $prefix;
         $this->suffix             = $suffix;
         $this->phpVersion         = $phpVersion;
         $this->phpVersionOperator = $phpVersionOperator;
+        $this->groups             = $groups;
     }
 
     /**
-     * @psalm-return non-empty-string
+     * @return non-empty-string
      */
     public function path(): string
     {
@@ -52,6 +64,9 @@ final class TestDirectory
         return $this->prefix;
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function suffix(): string
     {
         return $this->suffix;
@@ -65,5 +80,13 @@ final class TestDirectory
     public function phpVersionOperator(): VersionComparisonOperator
     {
         return $this->phpVersionOperator;
+    }
+
+    /**
+     * @return list<non-empty-string>
+     */
+    public function groups(): array
+    {
+        return $this->groups;
     }
 }

@@ -15,7 +15,7 @@ use function hrtime;
 final class Timer
 {
     /**
-     * @psalm-var list<float>
+     * @var list<float>
      */
     private array $startTimes = [];
 
@@ -29,9 +29,9 @@ final class Timer
      */
     public function stop(): Duration
     {
-        if (empty($this->startTimes)) {
+        if ($this->startTimes === []) {
             throw new NoActiveTimerException(
-                'Timer::start() has to be called before Timer::stop()'
+                'Timer::start() has to be called before Timer::stop()',
             );
         }
 

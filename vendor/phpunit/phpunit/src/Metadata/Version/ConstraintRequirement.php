@@ -9,27 +9,25 @@
  */
 namespace PHPUnit\Metadata\Version;
 
+use function assert;
 use function preg_replace;
 use PharIo\Version\Version;
 use PharIo\Version\VersionConstraint;
 
 /**
- * @psalm-immutable
+ * @immutable
  *
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  */
-final class ConstraintRequirement extends Requirement
+final readonly class ConstraintRequirement extends Requirement
 {
-    private readonly VersionConstraint $constraint;
+    private VersionConstraint $constraint;
 
     public function __construct(VersionConstraint $constraint)
     {
         $this->constraint = $constraint;
     }
 
-    /**
-     * @psalm-suppress ImpureMethodCall
-     */
     public function isSatisfiedBy(string $version): bool
     {
         return $this->constraint->complies(
@@ -37,9 +35,6 @@ final class ConstraintRequirement extends Requirement
         );
     }
 
-    /**
-     * @psalm-suppress ImpureMethodCall
-     */
     public function asString(): string
     {
         return $this->constraint->asString();
@@ -47,10 +42,14 @@ final class ConstraintRequirement extends Requirement
 
     private function sanitize(string $version): string
     {
-        return preg_replace(
+        $sanitized = preg_replace(
             '/^(\d+\.\d+(?:.\d+)?).*$/',
             '$1',
             $version,
         );
+
+        assert($sanitized !== null);
+
+        return $sanitized;
     }
 }

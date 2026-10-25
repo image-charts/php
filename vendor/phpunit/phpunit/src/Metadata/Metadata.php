@@ -9,480 +9,684 @@
  */
 namespace PHPUnit\Metadata;
 
+use Closure;
 use PHPUnit\Metadata\Version\Requirement;
+use PHPUnit\Runner\Extension\Extension;
 
 /**
- * @psalm-immutable
+ * @immutable
  *
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  */
-abstract class Metadata
+abstract readonly class Metadata
 {
-    private const CLASS_LEVEL  = 0;
-    private const METHOD_LEVEL = 1;
+    private Level $level;
 
-    /**
-     * @psalm-var 0|1
-     */
-    private readonly int $level;
-
-    public static function after(): After
+    public static function after(int $priority): After
     {
-        return new After(self::METHOD_LEVEL);
+        return new After(Level::METHOD_LEVEL, $priority);
     }
 
-    public static function afterClass(): AfterClass
+    public static function afterClass(int $priority): AfterClass
     {
-        return new AfterClass(self::METHOD_LEVEL);
+        return new AfterClass(Level::METHOD_LEVEL, $priority);
+    }
+
+    public static function allowMockObjectsWithoutExpectationsOnClass(): AllowMockObjectsWithoutExpectations
+    {
+        return new AllowMockObjectsWithoutExpectations(Level::CLASS_LEVEL);
+    }
+
+    public static function allowMockObjectsWithoutExpectationsOnMethod(): AllowMockObjectsWithoutExpectations
+    {
+        return new AllowMockObjectsWithoutExpectations(Level::METHOD_LEVEL);
     }
 
     public static function backupGlobalsOnClass(bool $enabled): BackupGlobals
     {
-        return new BackupGlobals(self::CLASS_LEVEL, $enabled);
+        return new BackupGlobals(Level::CLASS_LEVEL, $enabled);
     }
 
     public static function backupGlobalsOnMethod(bool $enabled): BackupGlobals
     {
-        return new BackupGlobals(self::METHOD_LEVEL, $enabled);
+        return new BackupGlobals(Level::METHOD_LEVEL, $enabled);
     }
 
     public static function backupStaticPropertiesOnClass(bool $enabled): BackupStaticProperties
     {
-        return new BackupStaticProperties(self::CLASS_LEVEL, $enabled);
+        return new BackupStaticProperties(Level::CLASS_LEVEL, $enabled);
     }
 
     public static function backupStaticPropertiesOnMethod(bool $enabled): BackupStaticProperties
     {
-        return new BackupStaticProperties(self::METHOD_LEVEL, $enabled);
+        return new BackupStaticProperties(Level::METHOD_LEVEL, $enabled);
     }
 
-    public static function before(): Before
+    public static function before(int $priority): Before
     {
-        return new Before(self::METHOD_LEVEL);
+        return new Before(Level::METHOD_LEVEL, $priority);
     }
 
-    public static function beforeClass(): BeforeClass
+    public static function beforeClass(int $priority): BeforeClass
     {
-        return new BeforeClass(self::METHOD_LEVEL);
+        return new BeforeClass(Level::METHOD_LEVEL, $priority);
     }
 
     /**
-     * @psalm-param class-string $className
+     * @param non-empty-string $namespace
+     */
+    public static function coversNamespace(string $namespace): CoversNamespace
+    {
+        return new CoversNamespace(Level::CLASS_LEVEL, $namespace);
+    }
+
+    /**
+     * @param class-string $className
      */
     public static function coversClass(string $className): CoversClass
     {
-        return new CoversClass(self::CLASS_LEVEL, $className);
+        return new CoversClass(Level::CLASS_LEVEL, $className);
     }
 
     /**
-     * @psalm-param non-empty-string $functionName
+     * @param class-string $className
+     */
+    public static function coversClassesThatExtendClass(string $className): CoversClassesThatExtendClass
+    {
+        return new CoversClassesThatExtendClass(Level::CLASS_LEVEL, $className);
+    }
+
+    /**
+     * @param class-string $interfaceName
+     */
+    public static function coversClassesThatImplementInterface(string $interfaceName): CoversClassesThatImplementInterface
+    {
+        return new CoversClassesThatImplementInterface(Level::CLASS_LEVEL, $interfaceName);
+    }
+
+    /**
+     * @param trait-string $traitName
+     */
+    public static function coversTrait(string $traitName): CoversTrait
+    {
+        return new CoversTrait(Level::CLASS_LEVEL, $traitName);
+    }
+
+    /**
+     * @param class-string     $className
+     * @param non-empty-string $methodName
+     */
+    public static function coversMethod(string $className, string $methodName): CoversMethod
+    {
+        return new CoversMethod(Level::CLASS_LEVEL, $className, $methodName);
+    }
+
+    /**
+     * @param non-empty-string $functionName
      */
     public static function coversFunction(string $functionName): CoversFunction
     {
-        return new CoversFunction(self::CLASS_LEVEL, $functionName);
+        return new CoversFunction(Level::CLASS_LEVEL, $functionName);
     }
 
     /**
-     * @psalm-param non-empty-string $target
+     * @param non-empty-string $path
      */
-    public static function coversOnClass(string $target): Covers
+    public static function coversFile(string $path): CoversFile
     {
-        return new Covers(self::CLASS_LEVEL, $target);
+        return new CoversFile(Level::CLASS_LEVEL, $path);
     }
 
     /**
-     * @psalm-param non-empty-string $target
+     * @param non-empty-string $directory
      */
-    public static function coversOnMethod(string $target): Covers
+    public static function coversDirectory(string $directory): CoversDirectory
     {
-        return new Covers(self::METHOD_LEVEL, $target);
+        return new CoversDirectory(Level::CLASS_LEVEL, $directory);
     }
 
     /**
-     * @psalm-param class-string $className
+     * @param non-empty-string $directory
      */
-    public static function coversDefaultClass(string $className): CoversDefaultClass
+    public static function coversDirectoryRecursively(string $directory): CoversDirectoryRecursively
     {
-        return new CoversDefaultClass(self::CLASS_LEVEL, $className);
+        return new CoversDirectoryRecursively(Level::CLASS_LEVEL, $directory);
     }
 
     public static function coversNothingOnClass(): CoversNothing
     {
-        return new CoversNothing(self::CLASS_LEVEL);
+        return new CoversNothing(Level::CLASS_LEVEL);
     }
 
     public static function coversNothingOnMethod(): CoversNothing
     {
-        return new CoversNothing(self::METHOD_LEVEL);
+        return new CoversNothing(Level::METHOD_LEVEL);
     }
 
     /**
-     * @psalm-param class-string $className
-     * @psalm-param non-empty-string $methodName
+     * @param class-string     $className
+     * @param non-empty-string $methodName
      */
-    public static function dataProvider(string $className, string $methodName): DataProvider
+    public static function dataProvider(string $className, string $methodName, bool $validateArgumentCount, bool $skipWhenEmpty): DataProvider
     {
-        return new DataProvider(self::METHOD_LEVEL, $className, $methodName);
+        return new DataProvider(Level::METHOD_LEVEL, $className, $methodName, $validateArgumentCount, $skipWhenEmpty);
+    }
+
+    public static function dataProviderClosure(Closure $callable, bool $validateArgumentCount): DataProviderClosure
+    {
+        return new DataProviderClosure(Level::METHOD_LEVEL, $callable, $validateArgumentCount);
     }
 
     /**
-     * @psalm-param class-string $className
+     * @param class-string $className
      */
     public static function dependsOnClass(string $className, bool $deepClone, bool $shallowClone): DependsOnClass
     {
-        return new DependsOnClass(self::METHOD_LEVEL, $className, $deepClone, $shallowClone);
+        return new DependsOnClass(Level::METHOD_LEVEL, $className, $deepClone, $shallowClone);
     }
 
     /**
-     * @psalm-param class-string $className
-     * @psalm-param non-empty-string $methodName
+     * @param class-string     $className
+     * @param non-empty-string $methodName
      */
     public static function dependsOnMethod(string $className, string $methodName, bool $deepClone, bool $shallowClone): DependsOnMethod
     {
-        return new DependsOnMethod(self::METHOD_LEVEL, $className, $methodName, $deepClone, $shallowClone);
+        return new DependsOnMethod(Level::METHOD_LEVEL, $className, $methodName, $deepClone, $shallowClone);
+    }
+
+    public static function disableReturnValueGenerationForTestDoubles(): DisableReturnValueGenerationForTestDoubles
+    {
+        return new DisableReturnValueGenerationForTestDoubles(Level::CLASS_LEVEL);
     }
 
     public static function doesNotPerformAssertionsOnClass(): DoesNotPerformAssertions
     {
-        return new DoesNotPerformAssertions(self::CLASS_LEVEL);
+        return new DoesNotPerformAssertions(Level::CLASS_LEVEL);
     }
 
     public static function doesNotPerformAssertionsOnMethod(): DoesNotPerformAssertions
     {
-        return new DoesNotPerformAssertions(self::METHOD_LEVEL);
+        return new DoesNotPerformAssertions(Level::METHOD_LEVEL);
     }
 
     /**
-     * @psalm-param non-empty-string $globalVariableName
+     * @param non-empty-string $globalVariableName
      */
     public static function excludeGlobalVariableFromBackupOnClass(string $globalVariableName): ExcludeGlobalVariableFromBackup
     {
-        return new ExcludeGlobalVariableFromBackup(self::CLASS_LEVEL, $globalVariableName);
+        return new ExcludeGlobalVariableFromBackup(Level::CLASS_LEVEL, $globalVariableName);
     }
 
     /**
-     * @psalm-param non-empty-string $globalVariableName
+     * @param non-empty-string $globalVariableName
      */
     public static function excludeGlobalVariableFromBackupOnMethod(string $globalVariableName): ExcludeGlobalVariableFromBackup
     {
-        return new ExcludeGlobalVariableFromBackup(self::METHOD_LEVEL, $globalVariableName);
+        return new ExcludeGlobalVariableFromBackup(Level::METHOD_LEVEL, $globalVariableName);
     }
 
     /**
-     * @psalm-param class-string $className
-     * @psalm-param non-empty-string $propertyName
+     * @param class-string     $className
+     * @param non-empty-string $propertyName
      */
     public static function excludeStaticPropertyFromBackupOnClass(string $className, string $propertyName): ExcludeStaticPropertyFromBackup
     {
-        return new ExcludeStaticPropertyFromBackup(self::CLASS_LEVEL, $className, $propertyName);
+        return new ExcludeStaticPropertyFromBackup(Level::CLASS_LEVEL, $className, $propertyName);
     }
 
     /**
-     * @psalm-param class-string $className
-     * @psalm-param non-empty-string $propertyName
+     * @param class-string     $className
+     * @param non-empty-string $propertyName
      */
     public static function excludeStaticPropertyFromBackupOnMethod(string $className, string $propertyName): ExcludeStaticPropertyFromBackup
     {
-        return new ExcludeStaticPropertyFromBackup(self::METHOD_LEVEL, $className, $propertyName);
+        return new ExcludeStaticPropertyFromBackup(Level::METHOD_LEVEL, $className, $propertyName);
     }
 
     /**
-     * @psalm-param non-empty-string $groupName
+     * @param non-empty-string $groupName
      */
     public static function groupOnClass(string $groupName): Group
     {
-        return new Group(self::CLASS_LEVEL, $groupName);
+        return new Group(Level::CLASS_LEVEL, $groupName);
     }
 
     /**
-     * @psalm-param non-empty-string $groupName
+     * @param non-empty-string $groupName
      */
     public static function groupOnMethod(string $groupName): Group
     {
-        return new Group(self::METHOD_LEVEL, $groupName);
-    }
-
-    public static function ignoreDeprecationsOnClass(): IgnoreDeprecations
-    {
-        return new IgnoreDeprecations(self::CLASS_LEVEL);
-    }
-
-    public static function ignoreDeprecationsOnMethod(): IgnoreDeprecations
-    {
-        return new IgnoreDeprecations(self::METHOD_LEVEL);
+        return new Group(Level::METHOD_LEVEL, $groupName);
     }
 
     /**
-     * @psalm-param class-string $className
+     * @param null|non-empty-string $messagePattern
      */
-    public static function ignoreClassForCodeCoverage(string $className): IgnoreClassForCodeCoverage
+    public static function ignoreDeprecationsOnClass(?string $messagePattern = null): IgnoreDeprecations
     {
-        return new IgnoreClassForCodeCoverage(self::CLASS_LEVEL, $className);
+        return new IgnoreDeprecations(Level::CLASS_LEVEL, $messagePattern);
     }
 
     /**
-     * @psalm-param class-string $className
-     * @psalm-param non-empty-string $methodName
+     * @param null|non-empty-string $messagePattern
      */
-    public static function ignoreMethodForCodeCoverage(string $className, string $methodName): IgnoreMethodForCodeCoverage
+    public static function ignoreDeprecationsOnMethod(?string $messagePattern = null): IgnoreDeprecations
     {
-        return new IgnoreMethodForCodeCoverage(self::CLASS_LEVEL, $className, $methodName);
+        return new IgnoreDeprecations(Level::METHOD_LEVEL, $messagePattern);
     }
 
     /**
-     * @psalm-param non-empty-string $functionName
+     * @internal This method is not covered by the backward compatibility promise for PHPUnit
      */
-    public static function ignoreFunctionForCodeCoverage(string $functionName): IgnoreFunctionForCodeCoverage
+    public static function ignorePhpunitDeprecationsOnClass(): IgnorePhpunitDeprecations
     {
-        return new IgnoreFunctionForCodeCoverage(self::CLASS_LEVEL, $functionName);
+        return new IgnorePhpunitDeprecations(Level::CLASS_LEVEL);
     }
 
-    public static function postCondition(): PostCondition
+    /**
+     * @internal This method is not covered by the backward compatibility promise for PHPUnit
+     */
+    public static function ignorePhpunitDeprecationsOnMethod(): IgnorePhpunitDeprecations
     {
-        return new PostCondition(self::METHOD_LEVEL);
+        return new IgnorePhpunitDeprecations(Level::METHOD_LEVEL);
     }
 
-    public static function preCondition(): PreCondition
+    /**
+     * @param non-empty-string $message
+     */
+    public static function invalidAttributeOnClass(string $message): InvalidAttribute
     {
-        return new PreCondition(self::METHOD_LEVEL);
+        return new InvalidAttribute(Level::CLASS_LEVEL, $message);
+    }
+
+    /**
+     * @param non-empty-string $message
+     */
+    public static function invalidAttributeOnMethod(string $message): InvalidAttribute
+    {
+        return new InvalidAttribute(Level::METHOD_LEVEL, $message);
+    }
+
+    public static function postCondition(int $priority): PostCondition
+    {
+        return new PostCondition(Level::METHOD_LEVEL, $priority);
+    }
+
+    public static function preCondition(int $priority): PreCondition
+    {
+        return new PreCondition(Level::METHOD_LEVEL, $priority);
     }
 
     public static function preserveGlobalStateOnClass(bool $enabled): PreserveGlobalState
     {
-        return new PreserveGlobalState(self::CLASS_LEVEL, $enabled);
+        return new PreserveGlobalState(Level::CLASS_LEVEL, $enabled);
     }
 
     public static function preserveGlobalStateOnMethod(bool $enabled): PreserveGlobalState
     {
-        return new PreserveGlobalState(self::METHOD_LEVEL, $enabled);
+        return new PreserveGlobalState(Level::METHOD_LEVEL, $enabled);
     }
 
     /**
-     * @psalm-param non-empty-string $functionName
+     * @param non-empty-string $functionName
      */
     public static function requiresFunctionOnClass(string $functionName): RequiresFunction
     {
-        return new RequiresFunction(self::CLASS_LEVEL, $functionName);
+        return new RequiresFunction(Level::CLASS_LEVEL, $functionName);
     }
 
     /**
-     * @psalm-param non-empty-string $functionName
+     * @param non-empty-string $functionName
      */
     public static function requiresFunctionOnMethod(string $functionName): RequiresFunction
     {
-        return new RequiresFunction(self::METHOD_LEVEL, $functionName);
+        return new RequiresFunction(Level::METHOD_LEVEL, $functionName);
     }
 
     /**
-     * @psalm-param class-string $className
-     * @psalm-param non-empty-string $methodName
+     * @param non-empty-string $className
+     */
+    public static function requiresClassOnClass(string $className): RequiresClass
+    {
+        return new RequiresClass(Level::CLASS_LEVEL, $className);
+    }
+
+    /**
+     * @param non-empty-string $className
+     */
+    public static function requiresClassOnMethod(string $className): RequiresClass
+    {
+        return new RequiresClass(Level::METHOD_LEVEL, $className);
+    }
+
+    /**
+     * @param non-empty-string $className
+     * @param non-empty-string $methodName
      */
     public static function requiresMethodOnClass(string $className, string $methodName): RequiresMethod
     {
-        return new RequiresMethod(self::CLASS_LEVEL, $className, $methodName);
+        return new RequiresMethod(Level::CLASS_LEVEL, $className, $methodName);
     }
 
     /**
-     * @psalm-param class-string $className
-     * @psalm-param non-empty-string $methodName
+     * @param non-empty-string $className
+     * @param non-empty-string $methodName
      */
     public static function requiresMethodOnMethod(string $className, string $methodName): RequiresMethod
     {
-        return new RequiresMethod(self::METHOD_LEVEL, $className, $methodName);
+        return new RequiresMethod(Level::METHOD_LEVEL, $className, $methodName);
     }
 
     /**
-     * @psalm-param non-empty-string $operatingSystem
+     * @param non-empty-string $operatingSystem
      */
     public static function requiresOperatingSystemOnClass(string $operatingSystem): RequiresOperatingSystem
     {
-        return new RequiresOperatingSystem(self::CLASS_LEVEL, $operatingSystem);
+        return new RequiresOperatingSystem(Level::CLASS_LEVEL, $operatingSystem);
     }
 
     /**
-     * @psalm-param non-empty-string $operatingSystem
+     * @param non-empty-string $operatingSystem
      */
     public static function requiresOperatingSystemOnMethod(string $operatingSystem): RequiresOperatingSystem
     {
-        return new RequiresOperatingSystem(self::METHOD_LEVEL, $operatingSystem);
+        return new RequiresOperatingSystem(Level::METHOD_LEVEL, $operatingSystem);
     }
 
     /**
-     * @psalm-param non-empty-string $operatingSystemFamily
+     * @param non-empty-string $operatingSystemFamily
      */
     public static function requiresOperatingSystemFamilyOnClass(string $operatingSystemFamily): RequiresOperatingSystemFamily
     {
-        return new RequiresOperatingSystemFamily(self::CLASS_LEVEL, $operatingSystemFamily);
+        return new RequiresOperatingSystemFamily(Level::CLASS_LEVEL, $operatingSystemFamily);
     }
 
     /**
-     * @psalm-param non-empty-string $operatingSystemFamily
+     * @param non-empty-string $operatingSystemFamily
      */
     public static function requiresOperatingSystemFamilyOnMethod(string $operatingSystemFamily): RequiresOperatingSystemFamily
     {
-        return new RequiresOperatingSystemFamily(self::METHOD_LEVEL, $operatingSystemFamily);
+        return new RequiresOperatingSystemFamily(Level::METHOD_LEVEL, $operatingSystemFamily);
     }
 
     public static function requiresPhpOnClass(Requirement $versionRequirement): RequiresPhp
     {
-        return new RequiresPhp(self::CLASS_LEVEL, $versionRequirement);
+        return new RequiresPhp(Level::CLASS_LEVEL, $versionRequirement);
     }
 
     public static function requiresPhpOnMethod(Requirement $versionRequirement): RequiresPhp
     {
-        return new RequiresPhp(self::METHOD_LEVEL, $versionRequirement);
+        return new RequiresPhp(Level::METHOD_LEVEL, $versionRequirement);
     }
 
     /**
-     * @psalm-param non-empty-string $extension
+     * @param non-empty-string $extension
      */
     public static function requiresPhpExtensionOnClass(string $extension, ?Requirement $versionRequirement): RequiresPhpExtension
     {
-        return new RequiresPhpExtension(self::CLASS_LEVEL, $extension, $versionRequirement);
+        return new RequiresPhpExtension(Level::CLASS_LEVEL, $extension, $versionRequirement);
     }
 
     /**
-     * @psalm-param non-empty-string $extension
+     * @param non-empty-string $extension
      */
     public static function requiresPhpExtensionOnMethod(string $extension, ?Requirement $versionRequirement): RequiresPhpExtension
     {
-        return new RequiresPhpExtension(self::METHOD_LEVEL, $extension, $versionRequirement);
+        return new RequiresPhpExtension(Level::METHOD_LEVEL, $extension, $versionRequirement);
     }
 
     public static function requiresPhpunitOnClass(Requirement $versionRequirement): RequiresPhpunit
     {
-        return new RequiresPhpunit(self::CLASS_LEVEL, $versionRequirement);
+        return new RequiresPhpunit(Level::CLASS_LEVEL, $versionRequirement);
     }
 
     public static function requiresPhpunitOnMethod(Requirement $versionRequirement): RequiresPhpunit
     {
-        return new RequiresPhpunit(self::METHOD_LEVEL, $versionRequirement);
+        return new RequiresPhpunit(Level::METHOD_LEVEL, $versionRequirement);
     }
 
     /**
-     * @psalm-param non-empty-string $setting
-     * @psalm-param non-empty-string $value
+     * @param class-string<Extension> $extensionClass
+     */
+    public static function requiresPhpunitExtensionOnClass(string $extensionClass): RequiresPhpunitExtension
+    {
+        return new RequiresPhpunitExtension(Level::CLASS_LEVEL, $extensionClass);
+    }
+
+    /**
+     * @param class-string<Extension> $extensionClass
+     */
+    public static function requiresPhpunitExtensionOnMethod(string $extensionClass): RequiresPhpunitExtension
+    {
+        return new RequiresPhpunitExtension(Level::METHOD_LEVEL, $extensionClass);
+    }
+
+    /**
+     * @param non-empty-string $environmentVariableName
+     */
+    public static function requiresEnvironmentVariableOnClass(string $environmentVariableName, null|string $value): RequiresEnvironmentVariable
+    {
+        return new RequiresEnvironmentVariable(Level::CLASS_LEVEL, $environmentVariableName, $value);
+    }
+
+    /**
+     * @param non-empty-string $environmentVariableName
+     */
+    public static function requiresEnvironmentVariableOnMethod(string $environmentVariableName, null|string $value): RequiresEnvironmentVariable
+    {
+        return new RequiresEnvironmentVariable(Level::METHOD_LEVEL, $environmentVariableName, $value);
+    }
+
+    /**
+     * @param non-empty-string $environmentVariableName
+     */
+    public static function withEnvironmentVariableOnClass(string $environmentVariableName, null|string $value): WithEnvironmentVariable
+    {
+        return new WithEnvironmentVariable(Level::CLASS_LEVEL, $environmentVariableName, $value);
+    }
+
+    /**
+     * @param non-empty-string $environmentVariableName
+     */
+    public static function withEnvironmentVariableOnMethod(string $environmentVariableName, null|string $value): WithEnvironmentVariable
+    {
+        return new WithEnvironmentVariable(Level::METHOD_LEVEL, $environmentVariableName, $value);
+    }
+
+    /**
+     * @param non-empty-string $setting
+     * @param non-empty-string $value
      */
     public static function requiresSettingOnClass(string $setting, string $value): RequiresSetting
     {
-        return new RequiresSetting(self::CLASS_LEVEL, $setting, $value);
+        return new RequiresSetting(Level::CLASS_LEVEL, $setting, $value);
     }
 
     /**
-     * @psalm-param non-empty-string $setting
-     * @psalm-param non-empty-string $value
+     * @param non-empty-string $setting
+     * @param non-empty-string $value
      */
     public static function requiresSettingOnMethod(string $setting, string $value): RequiresSetting
     {
-        return new RequiresSetting(self::METHOD_LEVEL, $setting, $value);
-    }
-
-    public static function runClassInSeparateProcess(): RunClassInSeparateProcess
-    {
-        return new RunClassInSeparateProcess(self::CLASS_LEVEL);
+        return new RequiresSetting(Level::METHOD_LEVEL, $setting, $value);
     }
 
     public static function runTestsInSeparateProcesses(): RunTestsInSeparateProcesses
     {
-        return new RunTestsInSeparateProcesses(self::CLASS_LEVEL);
+        return new RunTestsInSeparateProcesses(Level::CLASS_LEVEL);
+    }
+
+    /**
+     * @param positive-int $times
+     * @param positive-int $failureThreshold
+     */
+    public static function repeat(int $times, int $failureThreshold): Repeat
+    {
+        return new Repeat(Level::METHOD_LEVEL, $times, $failureThreshold);
+    }
+
+    /**
+     * @param positive-int $maxAttempts
+     */
+    public static function retry(int $maxAttempts): Retry
+    {
+        return new Retry(Level::METHOD_LEVEL, $maxAttempts);
     }
 
     public static function runInSeparateProcess(): RunInSeparateProcess
     {
-        return new RunInSeparateProcess(self::METHOD_LEVEL);
+        return new RunInSeparateProcess(Level::METHOD_LEVEL);
     }
 
     public static function test(): Test
     {
-        return new Test(self::METHOD_LEVEL);
+        return new Test(Level::METHOD_LEVEL);
     }
 
     /**
-     * @psalm-param non-empty-string $text
+     * @param non-empty-string $text
      */
     public static function testDoxOnClass(string $text): TestDox
     {
-        return new TestDox(self::CLASS_LEVEL, $text);
+        return new TestDox(Level::CLASS_LEVEL, $text);
     }
 
     /**
-     * @psalm-param non-empty-string $text
+     * @param non-empty-string $text
      */
     public static function testDoxOnMethod(string $text): TestDox
     {
-        return new TestDox(self::METHOD_LEVEL, $text);
-    }
-
-    public static function testWith(mixed $data): TestWith
-    {
-        return new TestWith(self::METHOD_LEVEL, $data);
+        return new TestDox(Level::METHOD_LEVEL, $text);
     }
 
     /**
-     * @psalm-param class-string $className
+     * @param class-string     $className
+     * @param non-empty-string $methodName
+     */
+    public static function testDoxFormatter(string $className, string $methodName): TestDoxFormatter
+    {
+        return new TestDoxFormatter(Level::METHOD_LEVEL, $className, $methodName);
+    }
+
+    /**
+     * @param ?non-empty-string $name
+     */
+    public static function testWith(mixed $data, ?string $name = null): TestWith
+    {
+        return new TestWith(Level::METHOD_LEVEL, $data, $name);
+    }
+
+    /**
+     * @param non-empty-string $namespace
+     */
+    public static function usesNamespace(string $namespace): UsesNamespace
+    {
+        return new UsesNamespace(Level::CLASS_LEVEL, $namespace);
+    }
+
+    /**
+     * @param class-string $className
      */
     public static function usesClass(string $className): UsesClass
     {
-        return new UsesClass(self::CLASS_LEVEL, $className);
+        return new UsesClass(Level::CLASS_LEVEL, $className);
     }
 
     /**
-     * @psalm-param non-empty-string $functionName
+     * @param class-string $className
+     */
+    public static function usesClassesThatExtendClass(string $className): UsesClassesThatExtendClass
+    {
+        return new UsesClassesThatExtendClass(Level::CLASS_LEVEL, $className);
+    }
+
+    /**
+     * @param class-string $interfaceName
+     */
+    public static function usesClassesThatImplementInterface(string $interfaceName): UsesClassesThatImplementInterface
+    {
+        return new UsesClassesThatImplementInterface(Level::CLASS_LEVEL, $interfaceName);
+    }
+
+    /**
+     * @param trait-string $traitName
+     */
+    public static function usesTrait(string $traitName): UsesTrait
+    {
+        return new UsesTrait(Level::CLASS_LEVEL, $traitName);
+    }
+
+    /**
+     * @param non-empty-string $functionName
      */
     public static function usesFunction(string $functionName): UsesFunction
     {
-        return new UsesFunction(self::CLASS_LEVEL, $functionName);
+        return new UsesFunction(Level::CLASS_LEVEL, $functionName);
     }
 
     /**
-     * @psalm-param non-empty-string $target
+     * @param class-string     $className
+     * @param non-empty-string $methodName
      */
-    public static function usesOnClass(string $target): Uses
+    public static function usesMethod(string $className, string $methodName): UsesMethod
     {
-        return new Uses(self::CLASS_LEVEL, $target);
+        return new UsesMethod(Level::CLASS_LEVEL, $className, $methodName);
     }
 
     /**
-     * @psalm-param non-empty-string $target
+     * @param non-empty-string $path
      */
-    public static function usesOnMethod(string $target): Uses
+    public static function usesFile(string $path): UsesFile
     {
-        return new Uses(self::METHOD_LEVEL, $target);
+        return new UsesFile(Level::CLASS_LEVEL, $path);
     }
 
     /**
-     * @psalm-param class-string $className
+     * @param non-empty-string $directory
      */
-    public static function usesDefaultClass(string $className): UsesDefaultClass
+    public static function usesDirectory(string $directory): UsesDirectory
     {
-        return new UsesDefaultClass(self::CLASS_LEVEL, $className);
+        return new UsesDirectory(Level::CLASS_LEVEL, $directory);
+    }
+
+    /**
+     * @param non-empty-string $directory
+     */
+    public static function usesDirectoryRecursively(string $directory): UsesDirectoryRecursively
+    {
+        return new UsesDirectoryRecursively(Level::CLASS_LEVEL, $directory);
     }
 
     public static function withoutErrorHandler(): WithoutErrorHandler
     {
-        return new WithoutErrorHandler(self::METHOD_LEVEL);
+        return new WithoutErrorHandler(Level::METHOD_LEVEL);
     }
 
     /**
-     * @psalm-param 0|1 $level
+     * @param null|non-empty-string $messagePattern
      */
-    protected function __construct(int $level)
+    public static function ignorePhpunitWarnings(?string $messagePattern): IgnorePhpunitWarnings
+    {
+        return new IgnorePhpunitWarnings(Level::METHOD_LEVEL, $messagePattern);
+    }
+
+    protected function __construct(Level $level)
     {
         $this->level = $level;
     }
 
     public function isClassLevel(): bool
     {
-        return $this->level === self::CLASS_LEVEL;
+        return $this->level === Level::CLASS_LEVEL;
     }
 
     public function isMethodLevel(): bool
     {
-        return $this->level === self::METHOD_LEVEL;
+        return $this->level === Level::METHOD_LEVEL;
     }
 
     /**
-     * @psalm-assert-if-true After $this
+     * @phpstan-assert-if-true After $this
      */
     public function isAfter(): bool
     {
@@ -490,7 +694,7 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true AfterClass $this
+     * @phpstan-assert-if-true AfterClass $this
      */
     public function isAfterClass(): bool
     {
@@ -498,7 +702,15 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true BackupGlobals $this
+     * @phpstan-assert-if-true AllowMockObjectsWithoutExpectations $this
+     */
+    public function isAllowMockObjectsWithoutExpectations(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @phpstan-assert-if-true BackupGlobals $this
      */
     public function isBackupGlobals(): bool
     {
@@ -506,7 +718,7 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true BackupStaticProperties $this
+     * @phpstan-assert-if-true BackupStaticProperties $this
      */
     public function isBackupStaticProperties(): bool
     {
@@ -514,7 +726,7 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true BeforeClass $this
+     * @phpstan-assert-if-true BeforeClass $this
      */
     public function isBeforeClass(): bool
     {
@@ -522,7 +734,7 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true Before $this
+     * @phpstan-assert-if-true Before $this
      */
     public function isBefore(): bool
     {
@@ -530,15 +742,15 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true Covers $this
+     * @phpstan-assert-if-true CoversNamespace $this
      */
-    public function isCovers(): bool
+    public function isCoversNamespace(): bool
     {
         return false;
     }
 
     /**
-     * @psalm-assert-if-true CoversClass $this
+     * @phpstan-assert-if-true CoversClass $this
      */
     public function isCoversClass(): bool
     {
@@ -546,15 +758,31 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true CoversDefaultClass $this
+     * @phpstan-assert-if-true CoversClassesThatExtendClass $this
      */
-    public function isCoversDefaultClass(): bool
+    public function isCoversClassesThatExtendClass(): bool
     {
         return false;
     }
 
     /**
-     * @psalm-assert-if-true CoversFunction $this
+     * @phpstan-assert-if-true CoversClassesThatImplementInterface $this
+     */
+    public function isCoversClassesThatImplementInterface(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @phpstan-assert-if-true CoversTrait $this
+     */
+    public function isCoversTrait(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @phpstan-assert-if-true CoversFunction $this
      */
     public function isCoversFunction(): bool
     {
@@ -562,7 +790,39 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true CoversNothing $this
+     * @phpstan-assert-if-true CoversMethod $this
+     */
+    public function isCoversMethod(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @phpstan-assert-if-true CoversFile $this
+     */
+    public function isCoversFile(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @phpstan-assert-if-true CoversDirectory $this
+     */
+    public function isCoversDirectory(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @phpstan-assert-if-true CoversDirectoryRecursively $this
+     */
+    public function isCoversDirectoryRecursively(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @phpstan-assert-if-true CoversNothing $this
      */
     public function isCoversNothing(): bool
     {
@@ -570,7 +830,7 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true DataProvider $this
+     * @phpstan-assert-if-true DataProvider $this
      */
     public function isDataProvider(): bool
     {
@@ -578,7 +838,15 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true DependsOnClass $this
+     * @phpstan-assert-if-true DataProviderClosure $this
+     */
+    public function isDataProviderClosure(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @phpstan-assert-if-true DependsOnClass $this
      */
     public function isDependsOnClass(): bool
     {
@@ -586,7 +854,7 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true DependsOnMethod $this
+     * @phpstan-assert-if-true DependsOnMethod $this
      */
     public function isDependsOnMethod(): bool
     {
@@ -594,7 +862,15 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true DoesNotPerformAssertions $this
+     * @phpstan-assert-if-true DisableReturnValueGenerationForTestDoubles $this
+     */
+    public function isDisableReturnValueGenerationForTestDoubles(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @phpstan-assert-if-true DoesNotPerformAssertions $this
      */
     public function isDoesNotPerformAssertions(): bool
     {
@@ -602,7 +878,7 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true ExcludeGlobalVariableFromBackup $this
+     * @phpstan-assert-if-true ExcludeGlobalVariableFromBackup $this
      */
     public function isExcludeGlobalVariableFromBackup(): bool
     {
@@ -610,7 +886,7 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true ExcludeStaticPropertyFromBackup $this
+     * @phpstan-assert-if-true ExcludeStaticPropertyFromBackup $this
      */
     public function isExcludeStaticPropertyFromBackup(): bool
     {
@@ -618,7 +894,7 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true Group $this
+     * @phpstan-assert-if-true Group $this
      */
     public function isGroup(): bool
     {
@@ -626,7 +902,7 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true IgnoreDeprecations $this
+     * @phpstan-assert-if-true IgnoreDeprecations $this
      */
     public function isIgnoreDeprecations(): bool
     {
@@ -634,39 +910,41 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true IgnoreClassForCodeCoverage $this
+     * @phpstan-assert-if-true IgnorePhpunitDeprecations $this
+     *
+     * @internal This method is not covered by the backward compatibility promise for PHPUnit
      */
-    public function isIgnoreClassForCodeCoverage(): bool
+    public function isIgnorePhpunitDeprecations(): bool
     {
         return false;
     }
 
     /**
-     * @psalm-assert-if-true IgnoreMethodForCodeCoverage $this
+     * @phpstan-assert-if-true InvalidAttribute $this
      */
-    public function isIgnoreMethodForCodeCoverage(): bool
+    public function isInvalidAttribute(): bool
     {
         return false;
     }
 
     /**
-     * @psalm-assert-if-true IgnoreFunctionForCodeCoverage $this
+     * @phpstan-assert-if-true Repeat $this
      */
-    public function isIgnoreFunctionForCodeCoverage(): bool
+    public function isRepeat(): bool
     {
         return false;
     }
 
     /**
-     * @psalm-assert-if-true RunClassInSeparateProcess $this
+     * @phpstan-assert-if-true Retry $this
      */
-    public function isRunClassInSeparateProcess(): bool
+    public function isRetry(): bool
     {
         return false;
     }
 
     /**
-     * @psalm-assert-if-true RunInSeparateProcess $this
+     * @phpstan-assert-if-true RunInSeparateProcess $this
      */
     public function isRunInSeparateProcess(): bool
     {
@@ -674,7 +952,7 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true RunTestsInSeparateProcesses $this
+     * @phpstan-assert-if-true RunTestsInSeparateProcesses $this
      */
     public function isRunTestsInSeparateProcesses(): bool
     {
@@ -682,7 +960,7 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true Test $this
+     * @phpstan-assert-if-true Test $this
      */
     public function isTest(): bool
     {
@@ -690,7 +968,7 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true PreCondition $this
+     * @phpstan-assert-if-true PreCondition $this
      */
     public function isPreCondition(): bool
     {
@@ -698,7 +976,7 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true PostCondition $this
+     * @phpstan-assert-if-true PostCondition $this
      */
     public function isPostCondition(): bool
     {
@@ -706,7 +984,7 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true PreserveGlobalState $this
+     * @phpstan-assert-if-true PreserveGlobalState $this
      */
     public function isPreserveGlobalState(): bool
     {
@@ -714,7 +992,7 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true RequiresMethod $this
+     * @phpstan-assert-if-true RequiresMethod $this
      */
     public function isRequiresMethod(): bool
     {
@@ -722,7 +1000,15 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true RequiresFunction $this
+     * @phpstan-assert-if-true RequiresClass $this
+     */
+    public function isRequiresClass(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @phpstan-assert-if-true RequiresFunction $this
      */
     public function isRequiresFunction(): bool
     {
@@ -730,7 +1016,7 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true RequiresOperatingSystem $this
+     * @phpstan-assert-if-true RequiresOperatingSystem $this
      */
     public function isRequiresOperatingSystem(): bool
     {
@@ -738,7 +1024,7 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true RequiresOperatingSystemFamily $this
+     * @phpstan-assert-if-true RequiresOperatingSystemFamily $this
      */
     public function isRequiresOperatingSystemFamily(): bool
     {
@@ -746,7 +1032,7 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true RequiresPhp $this
+     * @phpstan-assert-if-true RequiresPhp $this
      */
     public function isRequiresPhp(): bool
     {
@@ -754,7 +1040,7 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true RequiresPhpExtension $this
+     * @phpstan-assert-if-true RequiresPhpExtension $this
      */
     public function isRequiresPhpExtension(): bool
     {
@@ -762,7 +1048,7 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true RequiresPhpunit $this
+     * @phpstan-assert-if-true RequiresPhpunit $this
      */
     public function isRequiresPhpunit(): bool
     {
@@ -770,7 +1056,31 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true RequiresSetting $this
+     * @phpstan-assert-if-true RequiresPhpunitExtension $this
+     */
+    public function isRequiresPhpunitExtension(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @phpstan-assert-if-true RequiresEnvironmentVariable $this
+     */
+    public function isRequiresEnvironmentVariable(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @phpstan-assert-if-true WithEnvironmentVariable $this
+     */
+    public function isWithEnvironmentVariable(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @phpstan-assert-if-true RequiresSetting $this
      */
     public function isRequiresSetting(): bool
     {
@@ -778,7 +1088,7 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true TestDox $this
+     * @phpstan-assert-if-true TestDox $this
      */
     public function isTestDox(): bool
     {
@@ -786,7 +1096,15 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true TestWith $this
+     * @phpstan-assert-if-true TestDoxFormatter $this
+     */
+    public function isTestDoxFormatter(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @phpstan-assert-if-true TestWith $this
      */
     public function isTestWith(): bool
     {
@@ -794,15 +1112,15 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true Uses $this
+     * @phpstan-assert-if-true UsesNamespace $this
      */
-    public function isUses(): bool
+    public function isUsesNamespace(): bool
     {
         return false;
     }
 
     /**
-     * @psalm-assert-if-true UsesClass $this
+     * @phpstan-assert-if-true UsesClass $this
      */
     public function isUsesClass(): bool
     {
@@ -810,15 +1128,31 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true UsesDefaultClass $this
+     * @phpstan-assert-if-true UsesClassesThatExtendClass $this
      */
-    public function isUsesDefaultClass(): bool
+    public function isUsesClassesThatExtendClass(): bool
     {
         return false;
     }
 
     /**
-     * @psalm-assert-if-true UsesFunction $this
+     * @phpstan-assert-if-true UsesClassesThatImplementInterface $this
+     */
+    public function isUsesClassesThatImplementInterface(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @phpstan-assert-if-true UsesTrait $this
+     */
+    public function isUsesTrait(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @phpstan-assert-if-true UsesFunction $this
      */
     public function isUsesFunction(): bool
     {
@@ -826,9 +1160,49 @@ abstract class Metadata
     }
 
     /**
-     * @psalm-assert-if-true WithoutErrorHandler $this
+     * @phpstan-assert-if-true UsesMethod $this
+     */
+    public function isUsesMethod(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @phpstan-assert-if-true UsesFile $this
+     */
+    public function isUsesFile(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @phpstan-assert-if-true UsesDirectory $this
+     */
+    public function isUsesDirectory(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @phpstan-assert-if-true UsesDirectoryRecursively $this
+     */
+    public function isUsesDirectoryRecursively(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @phpstan-assert-if-true WithoutErrorHandler $this
      */
     public function isWithoutErrorHandler(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @phpstan-assert-if-true IgnorePhpunitWarnings $this
+     */
+    public function isIgnorePhpunitWarnings(): bool
     {
         return false;
     }

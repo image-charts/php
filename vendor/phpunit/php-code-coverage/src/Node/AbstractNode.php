@@ -11,24 +11,33 @@ namespace SebastianBergmann\CodeCoverage\Node;
 
 use const DIRECTORY_SEPARATOR;
 use function array_merge;
+use function max;
 use function str_ends_with;
 use function str_replace;
 use function substr;
 use Countable;
+use SebastianBergmann\CodeCoverage\Data\ProcessedClassType;
+use SebastianBergmann\CodeCoverage\Data\ProcessedFunctionType;
+use SebastianBergmann\CodeCoverage\Data\ProcessedTraitType;
+use SebastianBergmann\CodeCoverage\StaticAnalysis\LinesOfCode;
+use SebastianBergmann\CodeCoverage\Test\TestSizes;
 use SebastianBergmann\CodeCoverage\Util\Percentage;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
  *
- * @psalm-import-type LinesOfCodeType from \SebastianBergmann\CodeCoverage\StaticAnalysis\FileAnalyser
- * @psalm-import-type ProcessedFunctionType from \SebastianBergmann\CodeCoverage\Node\File
- * @psalm-import-type ProcessedClassType from \SebastianBergmann\CodeCoverage\Node\File
- * @psalm-import-type ProcessedTraitType from \SebastianBergmann\CodeCoverage\Node\File
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for phpunit/php-code-coverage
+ *
+ * @phpstan-import-type TestSizeSet from TestSizes
  */
 abstract class AbstractNode implements Countable
 {
     private readonly string $name;
     private string $pathAsString;
+
+    /**
+     * @var non-empty-list<self>
+     */
     private array $pathAsArray;
     private readonly ?AbstractNode $parent;
     private string $id;
@@ -61,6 +70,9 @@ abstract class AbstractNode implements Countable
         return $this->pathAsString;
     }
 
+    /**
+     * @return non-empty-list<self>
+     */
     public function pathAsArray(): array
     {
         return $this->pathAsArray;
@@ -127,6 +139,17 @@ abstract class AbstractNode implements Countable
         );
     }
 
+    /**
+     * @param TestSizeSet $testSizes
+     */
+    public function percentageOfExecutedLinesByTestSize(int $testSizes): Percentage
+    {
+        return Percentage::fromFractionAndTotal(
+            $this->numberOfExecutedLinesByTestSize($testSizes),
+            $this->numberOfExecutableLines(),
+        );
+    }
+
     public function percentageOfExecutedBranches(): Percentage
     {
         return Percentage::fromFractionAndTotal(
@@ -153,6 +176,17 @@ abstract class AbstractNode implements Countable
         return $this->numberOfTestedClasses() + $this->numberOfTestedTraits();
     }
 
+    /**
+     * @param TestSizeSet $testSizes
+     */
+    public function numberOfTestedClassesAndTraitsByTestSize(int $testSizes): int
+    {
+        return $this->numberOfTestedClassesByTestSize($testSizes) + $this->numberOfTestedTraitsByTestSize($testSizes);
+    }
+
+    /**
+     * @return array<string, ProcessedClassType|ProcessedTraitType>
+     */
     public function classesAndTraits(): array
     {
         return array_merge($this->classes(), $this->traits());
@@ -169,28 +203,56 @@ abstract class AbstractNode implements Countable
     }
 
     /**
-     * @psalm-return array<string, ProcessedClassType>
+     * @param TestSizeSet $testSizes
+     */
+    public function numberOfTestedFunctionsAndMethodsByTestSize(int $testSizes): int
+    {
+        return $this->numberOfTestedFunctionsByTestSize($testSizes) + $this->numberOfTestedMethodsByTestSize($testSizes);
+    }
+
+    /**
+     * @return non-negative-int
+     */
+    public function cyclomaticComplexity(): int
+    {
+        $ccn = 0;
+
+        foreach ($this->classesAndTraits() as $classLike) {
+            $ccn += $classLike->ccn;
+        }
+
+        foreach ($this->functions() as $function) {
+            $ccn += $function->ccn;
+        }
+
+        return max(0, $ccn);
+    }
+
+    /**
+     * @return array<string, ProcessedClassType>
      */
     abstract public function classes(): array;
 
     /**
-     * @psalm-return array<string, ProcessedTraitType>
+     * @return array<string, ProcessedTraitType>
      */
     abstract public function traits(): array;
 
     /**
-     * @psalm-return array<string, ProcessedFunctionType>
+     * @return array<string, ProcessedFunctionType>
      */
     abstract public function functions(): array;
 
-    /**
-     * @psalm-return LinesOfCodeType
-     */
-    abstract public function linesOfCode(): array;
+    abstract public function linesOfCode(): LinesOfCode;
 
     abstract public function numberOfExecutableLines(): int;
 
     abstract public function numberOfExecutedLines(): int;
+
+    /**
+     * @param TestSizeSet $testSizes
+     */
+    abstract public function numberOfExecutedLinesByTestSize(int $testSizes): int;
 
     abstract public function numberOfExecutableBranches(): int;
 
@@ -200,21 +262,43 @@ abstract class AbstractNode implements Countable
 
     abstract public function numberOfExecutedPaths(): int;
 
+    abstract public function numberOfFilesWithoutBranchCoverageData(): int;
+
     abstract public function numberOfClasses(): int;
 
     abstract public function numberOfTestedClasses(): int;
+
+    /**
+     * @param TestSizeSet $testSizes
+     */
+    abstract public function numberOfTestedClassesByTestSize(int $testSizes): int;
 
     abstract public function numberOfTraits(): int;
 
     abstract public function numberOfTestedTraits(): int;
 
+    /**
+     * @param TestSizeSet $testSizes
+     */
+    abstract public function numberOfTestedTraitsByTestSize(int $testSizes): int;
+
     abstract public function numberOfMethods(): int;
 
     abstract public function numberOfTestedMethods(): int;
 
+    /**
+     * @param TestSizeSet $testSizes
+     */
+    abstract public function numberOfTestedMethodsByTestSize(int $testSizes): int;
+
     abstract public function numberOfFunctions(): int;
 
     abstract public function numberOfTestedFunctions(): int;
+
+    /**
+     * @param TestSizeSet $testSizes
+     */
+    abstract public function numberOfTestedFunctionsByTestSize(int $testSizes): int;
 
     private function processId(): void
     {

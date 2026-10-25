@@ -9,6 +9,7 @@
  */
 namespace PHPUnit\TextUI\XmlConfiguration;
 
+use function assert;
 use function sprintf;
 use DOMDocument;
 use DOMElement;
@@ -19,7 +20,7 @@ use DOMXPath;
  *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
-abstract class LogToReportMigration implements Migration
+abstract readonly class LogToReportMigration implements Migration
 {
     /**
      * @throws MigrationException
@@ -28,9 +29,11 @@ abstract class LogToReportMigration implements Migration
     {
         $coverage = $document->getElementsByTagName('coverage')->item(0);
 
+        // @codeCoverageIgnoreStart
         if (!$coverage instanceof DOMElement) {
             throw new MigrationException('Unexpected state - No coverage element');
         }
+        // @codeCoverageIgnoreEnd
 
         $logNode = $this->findLogNode($document);
 
@@ -47,9 +50,17 @@ abstract class LogToReportMigration implements Migration
         }
 
         $report->appendChild($reportChild);
-        $logNode->parentNode->removeChild($logNode);
+
+        $parent = $logNode->parentNode;
+
+        assert($parent !== null);
+
+        $parent->removeChild($logNode);
     }
 
+    /**
+     * @param list<non-empty-string> $attributes
+     */
     protected function migrateAttributes(DOMElement $src, DOMElement $dest, array $attributes): void
     {
         foreach ($attributes as $attr) {
@@ -68,9 +79,18 @@ abstract class LogToReportMigration implements Migration
 
     private function findLogNode(DOMDocument $document): ?DOMElement
     {
-        $logNode = (new DOMXPath($document))->query(
-            sprintf('//logging/log[@type="%s"]', $this->forType()),
-        )->item(0);
+        $xpath = new DOMXPath($document);
+
+        $logNode = $xpath->query(
+            sprintf(
+                '//logging/log[@type="%s"]',
+                $this->forType(),
+            ),
+        );
+
+        assert($logNode !== false);
+
+        $logNode = $logNode->item(0);
 
         if (!$logNode instanceof DOMElement) {
             return null;

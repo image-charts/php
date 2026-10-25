@@ -9,10 +9,11 @@
  */
 namespace PHPUnit\Event;
 
-use function gc_status;
+use function assert;
+use function interface_exists;
 use PHPUnit\Event\Telemetry\HRTime;
-use PHPUnit\Event\Telemetry\Php81GarbageCollectorStatusProvider;
-use PHPUnit\Event\Telemetry\Php83GarbageCollectorStatusProvider;
+use PHPUnit\Event\Telemetry\SystemGarbageCollectorStatusProvider;
+use PHPUnit\Runner\DeprecationCollector\Facade as DeprecationCollector;
 
 /**
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
@@ -71,6 +72,25 @@ final class Facade
     }
 
     /**
+     * Registers subscribers that are notified of events while they are being
+     * collected instead of dispatched, for instance for an attempt of a
+     * retried test.
+     *
+     * @throws EventFacadeIsSealedException
+     * @throws UnknownSubscriberTypeException
+     */
+    public function registerSubscribersForCollectedEvents(Subscriber ...$subscribers): void
+    {
+        if ($this->sealed) {
+            throw new EventFacadeIsSealedException;
+        }
+
+        foreach ($subscribers as $subscriber) {
+            $this->deferredDispatcher()->registerSubscriberForCollectedEvents($subscriber);
+        }
+    }
+
+    /**
      * @throws EventFacadeIsSealedException
      */
     public function registerTracer(Tracer\Tracer $tracer): void
@@ -87,22 +107,23 @@ final class Facade
      *
      * @noinspection PhpUnused
      */
-    public function initForIsolation(HRTime $offset, bool $exportObjects): CollectingDispatcher
+    public function initForIsolation(HRTime $offset): CollectingDispatcher
     {
-        $dispatcher = new CollectingDispatcher;
+        DeprecationCollector::initForIsolation();
+
+        $dispatcher = new CollectingDispatcher(
+            new DirectDispatcher($this->typeMap()),
+        );
 
         $this->emitter = new DispatchingEmitter(
             $dispatcher,
             new Telemetry\System(
                 new Telemetry\SystemStopWatchWithOffset($offset),
                 new Telemetry\SystemMemoryMeter,
-                $this->garbageCollectorStatusProvider(),
+                new SystemGarbageCollectorStatusProvider,
+                new Telemetry\SystemCpuTimeMeter,
             ),
         );
-
-        if ($exportObjects) {
-            $this->emitter->exportObjects();
-        }
 
         $this->sealed = true;
 
@@ -116,6 +137,22 @@ final class Facade
         foreach ($events as $event) {
             $dispatcher->dispatch($event);
         }
+    }
+
+    /**
+     * @throws EventsAreAlreadyBeingCollectedException
+     */
+    public function startCollectingEvents(): void
+    {
+        $this->deferredDispatcher()->startCollectingEvents();
+    }
+
+    /**
+     * @throws EventsAreNotBeingCollectedException
+     */
+    public function stopCollectingEvents(): EventCollection
+    {
+        return $this->deferredDispatcher()->stopCollectingEvents();
     }
 
     public function seal(): void
@@ -140,7 +177,8 @@ final class Facade
         return new Telemetry\System(
             new Telemetry\SystemStopWatch,
             new Telemetry\SystemMemoryMeter,
-            $this->garbageCollectorStatusProvider(),
+            new SystemGarbageCollectorStatusProvider,
+            new Telemetry\SystemCpuTimeMeter,
         );
     }
 
@@ -148,6 +186,7 @@ final class Facade
     {
         if ($this->deferringDispatcher === null) {
             $this->deferringDispatcher = new DeferringDispatcher(
+                new DirectDispatcher($this->typeMap()),
                 new DirectDispatcher($this->typeMap()),
             );
         }
@@ -179,20 +218,26 @@ final class Facade
             Test\MarkedIncomplete::class,
             Test\AfterLastTestMethodCalled::class,
             Test\AfterLastTestMethodErrored::class,
+            Test\AfterLastTestMethodFailed::class,
             Test\AfterLastTestMethodFinished::class,
             Test\AfterTestMethodCalled::class,
             Test\AfterTestMethodErrored::class,
+            Test\AfterTestMethodFailed::class,
             Test\AfterTestMethodFinished::class,
-            Test\AssertionSucceeded::class,
-            Test\AssertionFailed::class,
             Test\BeforeFirstTestMethodCalled::class,
             Test\BeforeFirstTestMethodErrored::class,
+            Test\BeforeFirstTestMethodFailed::class,
             Test\BeforeFirstTestMethodFinished::class,
             Test\BeforeTestMethodCalled::class,
             Test\BeforeTestMethodErrored::class,
+            Test\BeforeTestMethodFailed::class,
             Test\BeforeTestMethodFinished::class,
+            Test\AdditionalInformationProvided::class,
             Test\ComparatorRegistered::class,
+            Test\CustomTestMethodInvocationUsed::class,
             Test\ConsideredRisky::class,
+            Test\AttemptErrored::class,
+            Test\AttemptFailed::class,
             Test\DeprecationTriggered::class,
             Test\Errored::class,
             Test\ErrorTriggered::class,
@@ -203,29 +248,29 @@ final class Facade
             Test\PhpDeprecationTriggered::class,
             Test\PhpNoticeTriggered::class,
             Test\PhpunitDeprecationTriggered::class,
+            Test\PhpunitNoticeTriggered::class,
             Test\PhpunitErrorTriggered::class,
             Test\PhpunitWarningTriggered::class,
             Test\PhpWarningTriggered::class,
             Test\PostConditionCalled::class,
             Test\PostConditionErrored::class,
+            Test\PostConditionFailed::class,
             Test\PostConditionFinished::class,
             Test\PreConditionCalled::class,
             Test\PreConditionErrored::class,
+            Test\PreConditionFailed::class,
             Test\PreConditionFinished::class,
             Test\PreparationStarted::class,
             Test\Prepared::class,
+            Test\PreparationErrored::class,
             Test\PreparationFailed::class,
             Test\PrintedUnexpectedOutput::class,
             Test\Skipped::class,
             Test\WarningTriggered::class,
 
             Test\MockObjectCreated::class,
-            Test\MockObjectForAbstractClassCreated::class,
             Test\MockObjectForIntersectionOfInterfacesCreated::class,
-            Test\MockObjectForTraitCreated::class,
-            Test\MockObjectFromWsdlCreated::class,
             Test\PartialMockObjectCreated::class,
-            Test\TestProxyCreated::class,
             Test\TestStubCreated::class,
             Test\TestStubForIntersectionOfInterfacesCreated::class,
 
@@ -239,11 +284,25 @@ final class Facade
             TestRunner\ExtensionBootstrapped::class,
             TestRunner\Finished::class,
             TestRunner\Started::class,
+            TestRunner\TimeLimitExceeded::class,
             TestRunner\DeprecationTriggered::class,
+            TestRunner\NoticeTriggered::class,
             TestRunner\WarningTriggered::class,
+            TestRunner\Issue\DeprecationTriggered::class,
+            TestRunner\ErrorTriggered::class,
+            TestRunner\Issue\NoticeTriggered::class,
+            TestRunner\PhpDeprecationTriggered::class,
+            TestRunner\PhpNoticeTriggered::class,
+            TestRunner\PhpWarningTriggered::class,
+            TestRunner\Issue\WarningTriggered::class,
             TestRunner\GarbageCollectionDisabled::class,
             TestRunner\GarbageCollectionTriggered::class,
             TestRunner\GarbageCollectionEnabled::class,
+            TestRunner\ChildProcessStarted::class,
+            TestRunner\ChildProcessErrored::class,
+            TestRunner\ChildProcessFinished::class,
+            TestRunner\StaticAnalysisForCodeCoverageFinished::class,
+            TestRunner\StaticAnalysisForCodeCoverageStarted::class,
 
             TestSuite\Filtered::class,
             TestSuite\Finished::class,
@@ -254,21 +313,11 @@ final class Facade
         ];
 
         foreach ($defaultEvents as $eventClass) {
-            $typeMap->addMapping(
-                $eventClass . 'Subscriber',
-                $eventClass,
-            );
-        }
-    }
+            $subscriberInterface = $eventClass . 'Subscriber';
 
-    private function garbageCollectorStatusProvider(): Telemetry\GarbageCollectorStatusProvider
-    {
-        if (!isset(gc_status()['running'])) {
-            // @codeCoverageIgnoreStart
-            return new Php81GarbageCollectorStatusProvider;
-            // @codeCoverageIgnoreEnd
-        }
+            assert(interface_exists($subscriberInterface));
 
-        return new Php83GarbageCollectorStatusProvider;
+            $typeMap->addMapping($subscriberInterface, $eventClass);
+        }
     }
 }

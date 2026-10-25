@@ -62,33 +62,33 @@ final class SummaryPrinter
             return;
         }
 
-        $color = 'fg-black, bg-yellow';
-
         if ($result->wasSuccessful()) {
             if ($result->hasIssues()) {
+                $color = 'fg-black, bg-yellow';
+
                 $this->printWithColor(
                     $color,
                     'OK, but there were issues!',
                 );
             } else {
+                $color = 'fg-black, bg-green';
+
                 $this->printWithColor(
                     $color,
                     'OK, but some tests were skipped!',
                 );
             }
         } else {
-            if ($result->hasTestErroredEvents() || $result->hasTestTriggeredPhpunitErrorEvents()) {
-                $color = 'fg-white, bg-red';
+            $color = 'fg-white, bg-red';
 
+            if ($result->hasTestErroredEvents() || $result->hasTestTriggeredPhpunitErrorEvents()) {
                 $this->printWithColor(
-                    $color,
+                    'fg-white, bg-red',
                     'ERRORS!',
                 );
-            } elseif ($result->hasTestFailedEvents()) {
-                $color = 'fg-white, bg-red';
-
+            } else {
                 $this->printWithColor(
-                    $color,
+                    'fg-white, bg-red',
                     'FAILURES!',
                 );
             }
@@ -102,8 +102,9 @@ final class SummaryPrinter
         $this->printCountString($result->numberOfWarnings(), 'Warnings', $color);
         $this->printCountString($result->numberOfPhpOrUserDeprecations(), 'Deprecations', $color);
         $this->printCountString($result->numberOfPhpunitDeprecations(), 'PHPUnit Deprecations', $color);
+        $this->printCountString($result->numberOfPhpunitNotices(), 'PHPUnit Notices', $color);
         $this->printCountString($result->numberOfNotices(), 'Notices', $color);
-        $this->printCountString($result->numberOfTestSuiteSkippedEvents() + $result->numberOfTestSkippedEvents(), 'Skipped', $color);
+        $this->printCountString($result->numberOfTestSkippedByTestSuiteSkippedEvents() + $result->numberOfTestSkippedEvents(), 'Skipped', $color);
         $this->printCountString($result->numberOfTestMarkedIncompleteEvents(), 'Incomplete', $color);
         $this->printCountString($result->numberOfTestsWithTestConsideredRiskyEvents(), 'Risky', $color);
         $this->printWithColor($color, '.');
@@ -111,6 +112,10 @@ final class SummaryPrinter
         $this->printNumberOfIssuesIgnoredByBaseline($result);
     }
 
+    /**
+     * @param non-empty-string $name
+     * @param non-empty-string $color
+     */
     private function printCountString(int $count, string $name, string $color, bool $always = false): void
     {
         if ($always || $count > 0) {
@@ -129,6 +134,10 @@ final class SummaryPrinter
         }
     }
 
+    /**
+     * @param non-empty-string $color
+     * @param non-empty-string $buffer
+     */
     private function printWithColor(string $color, string $buffer, bool $lf = true): void
     {
         if ($this->colors) {

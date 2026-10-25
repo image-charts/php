@@ -10,6 +10,7 @@
 namespace PHPUnit\Util;
 
 use const ENT_QUOTES;
+use function assert;
 use function htmlspecialchars;
 use function mb_convert_encoding;
 use function ord;
@@ -21,7 +22,7 @@ use function strlen;
  *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
-final class Xml
+final readonly class Xml
 {
     /**
      * Escapes a string for the use in XML documents.
@@ -33,7 +34,7 @@ final class Xml
      */
     public static function prepareString(string $string): string
     {
-        return preg_replace(
+        $result = preg_replace(
             '/[\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f\\x7f]/',
             '',
             htmlspecialchars(
@@ -41,6 +42,10 @@ final class Xml
                 ENT_QUOTES,
             ),
         );
+
+        assert($result !== null);
+
+        return $result;
     }
 
     private static function convertToUtf8(string $string): string

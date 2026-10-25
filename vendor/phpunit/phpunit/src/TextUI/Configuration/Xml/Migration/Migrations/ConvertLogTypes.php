@@ -9,6 +9,7 @@
  */
 namespace PHPUnit\TextUI\XmlConfiguration;
 
+use function assert;
 use DOMDocument;
 use DOMElement;
 
@@ -17,7 +18,7 @@ use DOMElement;
  *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
-final class ConvertLogTypes implements Migration
+final readonly class ConvertLogTypes implements Migration
 {
     public function migrate(DOMDocument $document): void
     {
@@ -26,6 +27,7 @@ final class ConvertLogTypes implements Migration
         if (!$logging instanceof DOMElement) {
             return;
         }
+
         $types = [
             'junit'        => 'junit',
             'teamcity'     => 'teamcity',
@@ -46,7 +48,14 @@ final class ConvertLogTypes implements Migration
         }
 
         foreach ($logNodes as $oldNode) {
-            $newLogNode = $document->createElement($types[$oldNode->getAttribute('type')]);
+            assert($oldNode instanceof DOMElement);
+
+            $type = $oldNode->getAttribute('type');
+
+            assert(isset($types[$type]));
+
+            $newLogNode = $document->createElement($types[$type]);
+
             $newLogNode->setAttribute('outputFile', $oldNode->getAttribute('target'));
 
             $logging->replaceChild($newLogNode, $oldNode);

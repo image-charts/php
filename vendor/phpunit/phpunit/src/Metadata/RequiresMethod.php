@@ -10,28 +10,27 @@
 namespace PHPUnit\Metadata;
 
 /**
- * @psalm-immutable
+ * @immutable
  *
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  */
-final class RequiresMethod extends Metadata
+final readonly class RequiresMethod extends Metadata
 {
     /**
-     * @psalm-var class-string
+     * @var non-empty-string
      */
-    private readonly string $className;
+    private string $className;
 
     /**
-     * @psalm-var non-empty-string
+     * @var non-empty-string
      */
-    private readonly string $methodName;
+    private string $methodName;
 
     /**
-     * @psalm-param 0|1 $level
-     * @psalm-param class-string $className
-     * @psalm-param non-empty-string $methodName
+     * @param non-empty-string $className
+     * @param non-empty-string $methodName
      */
-    protected function __construct(int $level, string $className, string $methodName)
+    protected function __construct(Level $level, string $className, string $methodName)
     {
         parent::__construct($level);
 
@@ -39,16 +38,13 @@ final class RequiresMethod extends Metadata
         $this->methodName = $methodName;
     }
 
-    /**
-     * @psalm-assert-if-true RequiresMethod $this
-     */
-    public function isRequiresMethod(): bool
+    public function isRequiresMethod(): true
     {
         return true;
     }
 
     /**
-     * @psalm-return class-string
+     * @return non-empty-string
      */
     public function className(): string
     {
@@ -56,7 +52,7 @@ final class RequiresMethod extends Metadata
     }
 
     /**
-     * @psalm-return non-empty-string
+     * @return non-empty-string
      */
     public function methodName(): string
     {

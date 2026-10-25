@@ -9,11 +9,12 @@
  */
 namespace PHPUnit\Framework\Constraint;
 
+use const PREG_SPLIT_DELIM_CAPTURE;
 use function array_map;
-use function count;
-use function preg_match;
+use function assert;
 use function preg_quote;
 use function preg_replace;
+use function preg_split;
 use PHPUnit\Framework\ExpectationFailedException;
 
 /**
@@ -21,6 +22,11 @@ use PHPUnit\Framework\ExpectationFailedException;
  */
 final class LogicalNot extends UnaryOperator
 {
+    /**
+     * @deprecated https://github.com/sebastianbergmann/phpunit/issues/6686
+     *
+     * @return non-empty-string
+     */
     public static function negate(string $string): string
     {
         $positives = [
@@ -49,36 +55,45 @@ final class LogicalNot extends UnaryOperator
             'not ',
         ];
 
-        preg_match('/(\'[\w\W]*\')([\w\W]*)("[\w\W]*")/i', $string, $matches);
-
-        if (count($matches) === 0) {
-            preg_match('/(\'[\w\W]*\')([\w\W]*)(\'[\w\W]*\')/i', $string, $matches);
-        }
-
         $positives = array_map(
             static fn (string $s) => '/\\b' . preg_quote($s, '/') . '/',
             $positives,
         );
 
-        if (count($matches) > 0) {
-            $nonInput = $matches[2];
+        // Split the description into quoted segments (single- or double-quoted)
+        // and the text around them, then negate only the surrounding text. This
+        // prevents words such as "is" or "contains" that appear inside exported
+        // string values, array keys, or object property names from being
+        // rewritten, while still negating the constraint's own wording (which
+        // always lives outside of any quotes).
+        $segments = preg_split(
+            '/(\'[^\']*\'|"[^"]*")/',
+            $string,
+            -1,
+            PREG_SPLIT_DELIM_CAPTURE,
+        );
 
-            $negatedString = preg_replace(
-                '/' . preg_quote($nonInput, '/') . '/',
-                preg_replace(
-                    $positives,
-                    $negatives,
-                    $nonInput,
-                ),
-                $string,
-            );
-        } else {
-            $negatedString = preg_replace(
-                $positives,
-                $negatives,
-                $string,
-            );
+        if ($segments === false) {
+            // @codeCoverageIgnoreStart
+            $segments = [$string];
+            // @codeCoverageIgnoreEnd
         }
+
+        $negatedString = '';
+
+        foreach ($segments as $index => $segment) {
+            // Odd indices hold the captured quoted segments and are kept as-is.
+            if ($index % 2 === 1) {
+                $negatedString .= $segment;
+
+                continue;
+            }
+
+            $negatedString .= preg_replace($positives, $negatives, $segment);
+        }
+
+        assert($negatedString !== null);
+        assert($negatedString !== '');
 
         return $negatedString;
     }
@@ -109,16 +124,49 @@ final class LogicalNot extends UnaryOperator
      */
     protected function matches(mixed $other): bool
     {
-        return !$this->constraint()->evaluate($other, '', true);
+        return $this->constraint()->evaluate($other, '', true) === false;
     }
 
     /**
-     * Applies additional transformation to strings returned by toString() or
-     * failureDescription().
+     * Returns the string representation of $constraint in context of this
+     * operator.
      */
-    protected function transformString(string $string): string
+    protected function operandToString(Constraint $constraint): string
     {
-        return self::negate($string);
+        $string = $constraint->negatedToString();
+
+        if ($string !== '') {
+            return $string;
+        }
+
+        $string = $constraint->toStringInContext($this, 0);
+
+        if ($string !== '') {
+            return $string;
+        }
+
+        return self::negate($constraint->toString());
+    }
+
+    /**
+     * Returns the failure description of $constraint in context of this
+     * operator.
+     */
+    protected function operandFailureDescription(Constraint $constraint, mixed $other): string
+    {
+        $string = $constraint->negatedFailureDescription($other);
+
+        if ($string !== '') {
+            return $string;
+        }
+
+        $string = $constraint->failureDescriptionInContext($this, 0, $other);
+
+        if ($string !== '') {
+            return $string;
+        }
+
+        return self::negate($constraint->failureDescription($other));
     }
 
     /**

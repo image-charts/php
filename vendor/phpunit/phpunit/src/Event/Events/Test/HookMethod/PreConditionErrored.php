@@ -17,28 +17,24 @@ use PHPUnit\Event\Event;
 use PHPUnit\Event\Telemetry;
 
 /**
- * @psalm-immutable
+ * @immutable
  *
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  */
-final class PreConditionErrored implements Event
+final readonly class PreConditionErrored implements Event
 {
-    private readonly Telemetry\Info $telemetryInfo;
+    private Telemetry\Info $telemetryInfo;
+    private Code\TestMethod $test;
+    private Code\ClassMethod $calledMethod;
+    private Throwable $throwable;
 
     /**
-     * @psalm-var class-string
+     * @internal This method is not covered by the backward compatibility promise for PHPUnit
      */
-    private readonly string $testClassName;
-    private readonly Code\ClassMethod $calledMethod;
-    private readonly Throwable $throwable;
-
-    /**
-     * @psalm-param class-string $testClassName
-     */
-    public function __construct(Telemetry\Info $telemetryInfo, string $testClassName, Code\ClassMethod $calledMethod, Throwable $throwable)
+    public function __construct(Telemetry\Info $telemetryInfo, Code\TestMethod $test, Code\ClassMethod $calledMethod, Throwable $throwable)
     {
         $this->telemetryInfo = $telemetryInfo;
-        $this->testClassName = $testClassName;
+        $this->test          = $test;
         $this->calledMethod  = $calledMethod;
         $this->throwable     = $throwable;
     }
@@ -48,12 +44,9 @@ final class PreConditionErrored implements Event
         return $this->telemetryInfo;
     }
 
-    /**
-     * @psalm-return class-string
-     */
-    public function testClassName(): string
+    public function test(): Code\TestMethod
     {
-        return $this->testClassName;
+        return $this->test;
     }
 
     public function calledMethod(): Code\ClassMethod
@@ -66,11 +59,14 @@ final class PreConditionErrored implements Event
         return $this->throwable;
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function asString(): string
     {
         $message = $this->throwable->message();
 
-        if (!empty($message)) {
+        if ($message !== '') {
             $message = PHP_EOL . $message;
         }
 

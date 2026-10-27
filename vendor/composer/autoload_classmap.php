@@ -866,6 +866,7 @@ return array(
     'PHPUnit\\Runner\\Phpt\\CannotLoadPhptFileException' => $vendorDir . '/phpunit/phpunit/src/Runner/Phpt/Exception/CannotLoadPhptFileException.php',
     'PHPUnit\\Runner\\Phpt\\CodeCoverageBootstrapper' => $vendorDir . '/phpunit/phpunit/src/Runner/Phpt/CodeCoverageBootstrapper.php',
     'PHPUnit\\Runner\\Phpt\\ConflictingPhptSectionsException' => $vendorDir . '/phpunit/phpunit/src/Runner/Phpt/Exception/ConflictingPhptSectionsException.php',
+    'PHPUnit\\Runner\\Phpt\\CoverageFilesDirectoryCannotBeCreatedException' => $vendorDir . '/phpunit/phpunit/src/Runner/Phpt/Exception/CoverageFilesDirectoryCannotBeCreatedException.php',
     'PHPUnit\\Runner\\Phpt\\DuplicatePhptSectionException' => $vendorDir . '/phpunit/phpunit/src/Runner/Phpt/Exception/DuplicatePhptSectionException.php',
     'PHPUnit\\Runner\\Phpt\\InvalidPhptFileException' => $vendorDir . '/phpunit/phpunit/src/Runner/Phpt/Exception/InvalidPhptFileException.php',
     'PHPUnit\\Runner\\Phpt\\Parser' => $vendorDir . '/phpunit/phpunit/src/Runner/Phpt/Parser.php',

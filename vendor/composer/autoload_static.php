@@ -898,6 +898,7 @@ class ComposerStaticInit6c19ac51806ce35ce824e5d132d600f8
         'PHPUnit\\Runner\\Phpt\\CannotLoadPhptFileException' => __DIR__ . '/..' . '/phpunit/phpunit/src/Runner/Phpt/Exception/CannotLoadPhptFileException.php',
         'PHPUnit\\Runner\\Phpt\\CodeCoverageBootstrapper' => __DIR__ . '/..' . '/phpunit/phpunit/src/Runner/Phpt/CodeCoverageBootstrapper.php',
         'PHPUnit\\Runner\\Phpt\\ConflictingPhptSectionsException' => __DIR__ . '/..' . '/phpunit/phpunit/src/Runner/Phpt/Exception/ConflictingPhptSectionsException.php',
+        'PHPUnit\\Runner\\Phpt\\CoverageFilesDirectoryCannotBeCreatedException' => __DIR__ . '/..' . '/phpunit/phpunit/src/Runner/Phpt/Exception/CoverageFilesDirectoryCannotBeCreatedException.php',
         'PHPUnit\\Runner\\Phpt\\DuplicatePhptSectionException' => __DIR__ . '/..' . '/phpunit/phpunit/src/Runner/Phpt/Exception/DuplicatePhptSectionException.php',
         'PHPUnit\\Runner\\Phpt\\InvalidPhptFileException' => __DIR__ . '/..' . '/phpunit/phpunit/src/Runner/Phpt/Exception/InvalidPhptFileException.php',
         'PHPUnit\\Runner\\Phpt\\Parser' => __DIR__ . '/..' . '/phpunit/phpunit/src/Runner/Phpt/Parser.php',

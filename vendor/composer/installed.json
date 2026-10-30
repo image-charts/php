@@ -29,6 +29,7 @@
                 "phpunit/phpunit": "^7.5.20 || ^8.5.23 || ^9.5.13"
             },
             "time": "2026-08-11T10:17:44+00:00",
+            "published-time": "2026-08-11T10:29:20+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -88,6 +89,7 @@
                 "phpunit/phpunit": "^9.0"
             },
             "time": "2026-09-13T18:51:52+00:00",
+            "published-time": "2026-09-13T18:53:16+00:00",
             "bin": [
                 "bin/php-parse"
             ],
@@ -147,6 +149,7 @@
                 "php": "^7.2 || ^8.0"
             },
             "time": "2024-03-03T12:33:53+00:00",
+            "published-time": "2024-03-03T12:39:44+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -212,6 +215,7 @@
                 "php": "^7.2 || ^8.0"
             },
             "time": "2022-02-21T01:04:05+00:00",
+            "published-time": "2022-02-21T01:04:30+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -285,6 +289,7 @@
                 "ext-xdebug": "PHP extension that provides line coverage as well as branch and path coverage"
             },
             "time": "2026-10-03T14:05:38+00:00",
+            "published-time": "2026-10-03T14:05:51+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -362,6 +367,7 @@
                 "phpunit/phpunit": "^13.3.1"
             },
             "time": "2026-08-25T14:47:43+00:00",
+            "published-time": "2026-08-25T14:48:49+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -442,6 +448,7 @@
                 "ext-pcntl": "*"
             },
             "time": "2026-02-06T04:34:47+00:00",
+            "published-time": "2026-02-06T04:35:29+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -517,6 +524,7 @@
                 "phpunit/phpunit": "^13.3.6"
             },
             "time": "2026-10-03T04:54:24+00:00",
+            "published-time": "2026-10-03T04:54:39+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -592,6 +600,7 @@
                 "phpunit/phpunit": "^13.0"
             },
             "time": "2026-02-06T04:37:53+00:00",
+            "published-time": "2026-02-06T04:38:39+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -691,6 +700,7 @@
                 "staabm/side-effects-detector": "^1.0.5"
             },
             "time": "2026-10-27T04:16:22+00:00",
+            "published-time": "2026-10-27T04:18:40+00:00",
             "bin": [
                 "phpunit"
             ],
@@ -762,6 +772,7 @@
                 "phpunit/phpunit": "^13.2.6"
             },
             "time": "2026-08-01T04:27:14+00:00",
+            "published-time": "2026-08-01T04:29:01+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -841,6 +852,7 @@
                 "ext-bcmath": "For comparing BcMath\\Number objects"
             },
             "time": "2026-08-07T07:23:13+00:00",
+            "published-time": "2026-08-07T07:23:29+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -930,6 +942,7 @@
                 "phpunit/phpunit": "^13.0"
             },
             "time": "2026-02-06T04:41:32+00:00",
+            "published-time": "2026-02-06T04:41:49+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -1003,6 +1016,7 @@
                 "symfony/process": "^7.4.17"
             },
             "time": "2026-08-25T15:38:55+00:00",
+            "published-time": "2026-08-25T15:39:44+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -1087,6 +1101,7 @@
                 "ext-posix": "*"
             },
             "time": "2026-10-01T12:37:56+00:00",
+            "published-time": "2026-10-01T12:38:48+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -1165,6 +1180,7 @@
                 "phpunit/phpunit": "^13.3"
             },
             "time": "2026-08-07T07:22:06+00:00",
+            "published-time": "2026-08-07T07:23:47+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -1256,6 +1272,7 @@
                 "phpunit/phpunit": "^13.0"
             },
             "time": "2026-04-22T07:20:04+00:00",
+            "published-time": "2026-04-22T07:20:25+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -1328,6 +1345,7 @@
                 "phpunit/phpunit": "^13.4.3"
             },
             "time": "2026-10-21T05:59:52+00:00",
+            "published-time": "2026-10-21T06:01:28+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -1403,6 +1421,7 @@
                 "phpunit/phpunit": "^13.1.13"
             },
             "time": "2026-06-01T15:11:33+00:00",
+            "published-time": "2026-06-01T15:20:45+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -1478,6 +1497,7 @@
                 "phpunit/phpunit": "^13.2.4"
             },
             "time": "2026-07-09T08:42:34+00:00",
+            "published-time": "2026-07-09T08:44:06+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -1551,6 +1571,7 @@
                 "phpunit/phpunit": "^13.3.0"
             },
             "time": "2026-08-13T07:05:05+00:00",
+            "published-time": "2026-08-13T07:07:58+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -1622,6 +1643,7 @@
                 "phpunit/phpunit": "^13.3.0"
             },
             "time": "2026-08-13T06:34:36+00:00",
+            "published-time": "2026-08-13T06:39:22+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -1693,6 +1715,7 @@
                 "phpunit/phpunit": "^13.2.6"
             },
             "time": "2026-08-03T05:58:12+00:00",
+            "published-time": "2026-08-03T05:59:59+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -1772,6 +1795,7 @@
                 "phpunit/phpunit": "^13.3.0"
             },
             "time": "2026-08-10T08:00:57+00:00",
+            "published-time": "2026-08-10T08:01:43+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -1841,6 +1865,7 @@
                 "php": ">=8.4"
             },
             "time": "2026-10-04T05:51:14+00:00",
+            "published-time": "2026-10-04T05:52:22+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -1919,6 +1944,7 @@
                 "tomasvotruba/unused-public": "1.0.0"
             },
             "time": "2024-10-20T05:08:20+00:00",
+            "published-time": "2024-10-20T05:09:39+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -1968,6 +1994,7 @@
                 "php": "^8.1"
             },
             "time": "2025-12-08T11:19:18+00:00",
+            "published-time": "2025-12-08T11:19:39+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {

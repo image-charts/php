@@ -62,10 +62,23 @@ final readonly class Version
             $version = $release . '-dev';
         }
 
+        if (!is_dir($path . DIRECTORY_SEPARATOR . '.git')) {
+            return $version;
+        }
+
         $git = $this->getGitInformation($path, $release);
 
         if ($git === false) {
-            return $version;
+            // No tag is reachable from HEAD (no tags exist yet, or they were
+            // not fetched), so "git describe --tags" fails: identify HEAD by
+            // its abbreviated hash, prefixed with "g" as "git describe" does
+            $commit = $this->git($path, ['rev-parse', '--short', 'HEAD']);
+
+            if ($commit === false) {
+                return $version;
+            }
+
+            return $release . '-g' . $commit;
         }
 
         if (substr_count($release, '.') + 1 === 3) {
@@ -85,21 +98,23 @@ final readonly class Version
      */
     private function getGitInformation(string $path, string $release): false|string
     {
-        if (!is_dir($path . DIRECTORY_SEPARATOR . '.git')) {
-            return false;
-        }
-
         if (substr_count($release, '.') + 1 === 3) {
             $series = implode('.', array_slice(explode('.', $release), 0, 2));
 
-            $result = $this->describe($path, ['--match', $series . '.*']);
+            $result = $this->git($path, ['describe', '--tags', '--match', $series . '.*']);
 
             if ($result !== false) {
                 return $result;
             }
+
+            return $this->git($path, ['describe', '--tags']);
         }
 
-        return $this->describe($path, []);
+        // Without --long, "git describe" prints only the name of the tag when
+        // HEAD is tagged; with it, the output always ends with the abbreviated
+        // hash of HEAD, which is what the version string for a release series
+        // ends with
+        return $this->git($path, ['describe', '--tags', '--long']);
     }
 
     /**
@@ -108,10 +123,10 @@ final readonly class Version
      *
      * @return false|non-empty-string
      */
-    private function describe(string $path, array $arguments): false|string
+    private function git(string $path, array $arguments): false|string
     {
         $process = @proc_open(
-            ['git', 'describe', '--tags', ...$arguments],
+            ['git', ...$arguments],
             [
                 1 => ['pipe', 'w'],
                 2 => ['pipe', 'w'],

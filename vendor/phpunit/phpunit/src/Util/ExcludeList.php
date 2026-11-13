@@ -15,6 +15,7 @@ use function assert;
 use function class_exists;
 use function defined;
 use function dirname;
+use function interface_exists;
 use function is_dir;
 use function realpath;
 use function str_starts_with;
@@ -33,7 +34,9 @@ use SebastianBergmann\Complexity\Calculator;
 use SebastianBergmann\Diff\Diff;
 use SebastianBergmann\Environment\Runtime;
 use SebastianBergmann\Exporter\Exporter;
+use SebastianBergmann\FileFilter\Filter as FileFilter;
 use SebastianBergmann\FileIterator\Facade as FileIteratorFacade;
+use SebastianBergmann\GitState\State as GitState;
 use SebastianBergmann\GlobalState\Snapshot;
 use SebastianBergmann\Invoker\Invoker;
 use SebastianBergmann\LinesOfCode\Counter;
@@ -65,7 +68,7 @@ final class ExcludeList
         Parser::class => 1,
 
         // phar-io/manifest
-        Manifest::class => 1,
+        Manifest::class => 2,
 
         // phar-io/version
         PharIoVersion::class => 1,
@@ -105,6 +108,12 @@ final class ExcludeList
 
         // sebastian/exporter
         Exporter::class => 1,
+
+        // sebastian/file-filter
+        FileFilter::class => 1,
+
+        // sebastian/git-state
+        GitState::class => 1,
 
         // sebastian/global-state
         Snapshot::class => 1,
@@ -196,7 +205,7 @@ final class ExcludeList
         }
 
         foreach (self::EXCLUDED_CLASS_NAMES as $className => $parent) {
-            if (!class_exists($className)) {
+            if (!class_exists($className) && !interface_exists($className)) {
                 continue;
             }
 
